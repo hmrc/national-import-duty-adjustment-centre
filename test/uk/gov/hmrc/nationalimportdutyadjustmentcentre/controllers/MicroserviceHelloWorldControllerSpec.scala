@@ -30,11 +30,11 @@ class MicroserviceHelloWorldControllerSpec extends AnyWordSpec with Matchers wit
 
   private val fakeRequest = FakeRequest("GET", "/")
 
-  private val env = Environment.simple()
+  private val env           = Environment.simple()
   private val configuration = Configuration.load(env)
 
   private val serviceConfig = new ServicesConfig(configuration)
-  private val appConfig = new AppConfig(configuration, serviceConfig)
+  private val appConfig     = new AppConfig(configuration, serviceConfig)
 
   private val controller = new MicroserviceHelloWorldController(appConfig, Helpers.stubControllerComponents())
 
