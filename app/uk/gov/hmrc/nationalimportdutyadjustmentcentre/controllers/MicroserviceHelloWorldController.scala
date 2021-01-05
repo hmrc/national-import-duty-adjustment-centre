@@ -24,9 +24,11 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import scala.concurrent.Future
 
 @Singleton()
-class MicroserviceHelloWorldController @Inject()(appConfig: AppConfig, cc: ControllerComponents) extends BackendController(cc) {
+class MicroserviceHelloWorldController @Inject() (appConfig: AppConfig, cc: ControllerComponents)
+    extends BackendController(cc) {
 
   def hello(): Action[AnyContent] = Action.async { implicit request =>
     Future.successful(Ok("Hello world"))
   }
+
 }
