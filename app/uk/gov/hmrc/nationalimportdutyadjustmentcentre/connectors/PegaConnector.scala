@@ -23,7 +23,7 @@ import java.{util => ju}
 /** Provides PEGA API headers */
 trait PegaConnector {
 
-  final val httpDateFormat = DateTimeFormatter
+  private final val httpDateFormat = DateTimeFormatter
     .ofPattern("EEE, dd MMM yyyy HH:mm:ss z", ju.Locale.ENGLISH)
     .withZone(ZoneId.of("GMT"))
 

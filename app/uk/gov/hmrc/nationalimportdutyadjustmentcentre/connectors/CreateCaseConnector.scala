@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
-import java.time.ZonedDateTime
-
 import com.google.inject.Inject
 import play.api.libs.json.Writes
 import uk.gov.hmrc.http.logging.Authorization
@@ -47,13 +45,7 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
       implicitly[Writes[EISCreateCaseRequest]],
       readFromJsonSuccessOrFailure,
       HeaderCarrier(authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")))
-        .withExtraHeaders(
-          "x-correlation-id"    -> correlationId,
-          "CustomProcessesHost" -> "Digital",
-          "date"                -> httpDateFormat.format(ZonedDateTime.now),
-          "accept"              -> "application/json",
-          "environment"         -> config.eisEnvironment
-        ),
+        .withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*),
       implicitly[ExecutionContext]
     )
 
