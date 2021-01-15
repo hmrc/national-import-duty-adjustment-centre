@@ -25,9 +25,25 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val authBaseUrl: String = servicesConfig.baseUrl("auth")
 
+  val eisBaseUrl: String = servicesConfig.baseUrl("eis.createcaseapi")
+
+  val eisCreateCaseApiPath: String =
+    servicesConfig.getConfString("eis.createcaseapi.path", throwConfigNotFoundError("eis.createcaseapi.path"))
+
+  val eisAuthorizationToken: String =
+    servicesConfig.getConfString("eis.createcaseapi.token", throwConfigNotFoundError("eis.createcaseapi.token"))
+
+  val eisEnvironment: String = servicesConfig.getConfString(
+    "eis.createcaseapi.environment",
+    throwConfigNotFoundError("eis.createcaseapi.environment")
+  )
+
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
 
   val graphiteHost: String =
     config.get[String]("microservice.metrics.graphite.host")
+
+  private def throwConfigNotFoundError(key: String) =
+    throw new RuntimeException(s"Could not find config key '$key'")
 
 }
