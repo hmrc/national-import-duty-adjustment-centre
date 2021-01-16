@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import org.mockito.ArgumentMatchers.any
+import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.{reset, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
@@ -29,17 +29,18 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseRequest}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.ClaimService
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import scala.concurrent.Future
 
-class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
+class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
 
   private val claimRequest = CreateClaimRequest("some-id", "some-claim-type")
 
   private val mockClaimService = mock[ClaimService]
-  private val fakeResponse     = CreateClaimResponse("id", "claim-reference")
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(bind[MicroserviceAuthConnector].to(mockAuthConnector), bind[ClaimService].to(mockClaimService))
@@ -48,7 +49,6 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     withAuthorizedUser()
-    when(mockClaimService.create(any[CreateClaimRequest])).thenReturn(Future.successful(fakeResponse))
   }
 
   override protected def afterEach(): Unit = {
@@ -62,15 +62,39 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
 
     "return 201" when {
 
-      "request is valid" in {
-        val result: Future[Result] = route(app, post.withJsonBody(toJson(claimRequest))).get
+      "request succeeds" in {
+        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+          Future.successful(eisSuccessResponse)
+        )
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
 
         status(result) must be(CREATED)
-        contentAsJson(result) mustBe toJson(fakeResponse)
+        contentAsJson(result) mustBe toJson(
+          CreateClaimResponse(correlationId = "xyz", error = None, result = Some(eisSuccessResponse.CaseID))
+        )
       }
     }
 
     "return 400" when {
+
+      "request fails" in {
+        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+          Future.successful(eisFailResponse)
+        )
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
+
+        status(result) must be(BAD_REQUEST)
+        contentAsJson(result) mustBe toJson(
+          CreateClaimResponse(
+            correlationId = "xyz",
+            error = Some(ApiError(eisFailResponse.errorCode.get, eisFailResponse.errorMessage)),
+            result = None
+          )
+        )
+      }
+
       "request is invalid" in {
         val result: Future[Result] = route(app, post.withJsonBody(Json.obj("field" -> "value"))).get
 

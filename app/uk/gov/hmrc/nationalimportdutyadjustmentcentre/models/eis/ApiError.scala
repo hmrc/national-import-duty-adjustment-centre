@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
+package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
+import play.api.libs.json.{Format, Json}
 
-case class CreateClaimResponse(correlationId: String, error: Option[ApiError] = None, result: Option[String] = None)
+case class ApiError(errorCode: String, errorMessage: Option[String] = None)
 
-object CreateClaimResponse {
-
-  implicit val format: OFormat[CreateClaimResponse] = Json.format[CreateClaimResponse]
+object ApiError {
+  implicit val formats: Format[ApiError] = Json.format[ApiError]
 }

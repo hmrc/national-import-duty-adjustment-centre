@@ -36,6 +36,7 @@ lazy val scoverageSettings: Seq[Setting[_]] = Seq(
     "Reverse.*",
     "metrics\\..*",
     "test\\..*",
+    ".*\\.connectors\\..*",
     ".*(Routes|AppConfig|CustomHttp*).*",
     "logger.*\\(.*\\)"
   ).mkString(";"),

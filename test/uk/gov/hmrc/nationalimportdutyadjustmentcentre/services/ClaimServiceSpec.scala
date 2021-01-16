@@ -16,25 +16,44 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
+import org.mockito.ArgumentMatchers.{any, anyString}
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatestplus.mockito.MockitoSugar.mock
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.CreateClaimRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseRequest, EISCreateCaseSuccess}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
-class ClaimServiceSpec extends UnitSpec with ScalaFutures {
+import scala.concurrent.{ExecutionContext, Future}
 
-  val service: ClaimService = new ClaimService
+class ClaimServiceSpec extends UnitSpec with ScalaFutures with TestData {
+
+  implicit val executionContext: ExecutionContext =
+    scala.concurrent.ExecutionContext.Implicits.global
+
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  val connector: CreateCaseConnector = mock[CreateCaseConnector]
+  val service: ClaimService          = new ClaimService(connector)
+
+  val connectorSuccessResponse = mock[EISCreateCaseSuccess]
 
   "ClaimService" should {
 
-    "return response" when {
+    "return EIS response" when {
 
       "create called" in {
 
-        val request                       = CreateClaimRequest("user-id", "claimType")
-        val response: CreateClaimResponse = service.create(request).futureValue
+        when(connector.submitClaim(any[EISCreateCaseRequest], anyString())(any(), any())).thenReturn(
+          Future.successful(connectorSuccessResponse)
+        )
+        val request  = CreateClaimRequest("user-id", "claimType")
+        val response = service.createClaim(eisCreateCaseRequest(request), "xyz").futureValue
 
-        response.userId mustBe request.userId
-        response.claimReference must not be empty
+        response must be(connectorSuccessResponse)
       }
     }
   }

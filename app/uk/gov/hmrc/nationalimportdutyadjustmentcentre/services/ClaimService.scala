@@ -16,15 +16,18 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
+import javax.inject.Inject
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseRequest, EISCreateCaseResponse}
 
-import scala.concurrent.Future
-import scala.util.Random
+import scala.concurrent.{ExecutionContext, Future}
 
-class ClaimService {
+class ClaimService @Inject() (createCaseConnector: CreateCaseConnector)(implicit ec: ExecutionContext) {
 
-  // TODO - transform request with default missing values and post to EIS/PEGA
-  def create(request: CreateClaimRequest): Future[CreateClaimResponse] =
-    Future.successful(CreateClaimResponse(request.userId, Random.alphanumeric.take(16).mkString))
+  def createClaim(request: EISCreateCaseRequest, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[EISCreateCaseResponse] =
+    createCaseConnector.submitClaim(request, correlationId)
 
 }

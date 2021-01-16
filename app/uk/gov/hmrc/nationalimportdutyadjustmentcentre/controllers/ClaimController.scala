@@ -16,11 +16,19 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
+import java.util.UUID
+
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.CreateClaimRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
+  ApiError,
+  EISCreateCaseError,
+  EISCreateCaseRequest,
+  EISCreateCaseSuccess
+}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.ClaimService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -36,9 +44,35 @@ class ClaimController @Inject() (
 
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withAuthorised {
-      withJsonBody[CreateClaimRequest] { claim: CreateClaimRequest =>
-        claimService.create(claim) map { response =>
-          Created(Json.toJson(response))
+      withJsonBody[CreateClaimRequest] { createClaimRequest: CreateClaimRequest =>
+        val correlationId = request.headers
+          .get("x-correlation-id")
+          .getOrElse(UUID.randomUUID().toString()) // TODO understand why NDRC does this
+
+        val eisCreateCaseRequest = EISCreateCaseRequest(
+          AcknowledgementReference = correlationId.replace("-", ""),
+          ApplicationType = "NIDAC",
+          OriginatingSystem = "Digital",
+          Content = EISCreateCaseRequest.Content.from(createClaimRequest)
+        )
+
+        claimService.createClaim(eisCreateCaseRequest, correlationId) map {
+          case success: EISCreateCaseSuccess =>
+            Created(Json.toJson(CreateClaimResponse(correlationId = correlationId, result = Some(success.CaseID))))
+          case error: EISCreateCaseError =>
+            BadRequest(
+              Json.toJson(
+                CreateClaimResponse(
+                  correlationId = correlationId,
+                  error = Some(
+                    ApiError(
+                      errorCode = error.errorCode.getOrElse("ERROR_UPSTREAM_UNDEFINED"),
+                      errorMessage = error.errorMessage
+                    )
+                  )
+                )
+              )
+            )
         }
       }
     }
