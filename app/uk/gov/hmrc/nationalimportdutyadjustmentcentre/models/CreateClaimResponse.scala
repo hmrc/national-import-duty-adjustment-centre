@@ -21,7 +21,11 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 
 import java.time.LocalDateTime
 
-case class CreateClaimResponse(correlationId: String, error: Option[ApiError] = None, result: Option[CreateClaimResult] = None)
+case class CreateClaimResponse(
+  correlationId: String,
+  error: Option[ApiError] = None,
+  result: Option[CreateClaimResult] = None
+)
 
 object CreateClaimResponse {
   implicit val format: OFormat[CreateClaimResponse] = Json.format[CreateClaimResponse]

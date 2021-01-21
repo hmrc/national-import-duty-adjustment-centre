@@ -22,14 +22,18 @@ import java.time.ZonedDateTime
 import scala.concurrent.Future
 
 class FileTransferService {
-  def transfer(caseReference: String, uploads: Seq[UploadedFile]): Future[Seq[FileTransferResult]] = {
+
+  def transfer(caseReference: String, uploads: Seq[UploadedFile]): Future[Seq[FileTransferResult]] =
     Future.successful(
-      uploads.map(upload => FileTransferResult(
-        upscanReference = upload.upscanReference,
-        success = true,
-        httpStatus = 202,
-        transferredAt = ZonedDateTime.now.toLocalDateTime
-      ))
+      uploads.map(
+        upload =>
+          FileTransferResult(
+            upscanReference = upload.upscanReference,
+            success = true,
+            httpStatus = 202,
+            transferredAt = ZonedDateTime.now.toLocalDateTime
+          )
+      )
     )
-  }
+
 }
