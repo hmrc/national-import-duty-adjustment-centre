@@ -30,18 +30,19 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseRequest}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse, CreateClaimResult, UploadedFile}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.ClaimService
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse, CreateClaimResult, FileTransferResult, UploadedFile}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{ClaimService, FileTransferService}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
+import java.time.ZonedDateTime
 import scala.concurrent.Future
 
 class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
 
   private val claimRequest = CreateClaimRequest("some-id", "some-claim-type", Seq.empty)
-  private val uploadedFile = UploadedFile("upscanReference", "downloadURL", "checksum", "fileName", "mimeType")
 
   private val mockClaimService = mock[ClaimService]
+  private val mockFileTransferService = mock[FileTransferService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(bind[MicroserviceAuthConnector].to(mockAuthConnector), bind[ClaimService].to(mockClaimService))
@@ -85,9 +86,19 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           Future.successful(eisSuccessResponse)
         )
 
-        // TODO create/mock a FileTransferService
+        val uploadedFiles = Seq(UploadedFile("upscanReference", "downloadURL", "checksum", "fileName", "mimeType"))
+        val fileTransferResults = Seq(FileTransferResult(
+          upscanReference = "upscanReference",
+          success = true,
+          httpStatus = 202,
+          transferredAt = ZonedDateTime.now.toLocalDateTime
+        ))
 
-        val request = claimRequest.copy(uploads = Seq(uploadedFile))
+        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, uploadedFiles)).thenReturn(
+          Future.successful(fileTransferResults)
+        )
+
+        val request = claimRequest.copy(uploads = uploadedFiles)
 
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(request))).get
@@ -97,7 +108,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           CreateClaimResponse(
             correlationId = "xyz",
             error = None,
-            result = Some(CreateClaimResult(eisSuccessResponse.CaseID, Seq.empty))
+            result = Some(CreateClaimResult(eisSuccessResponse.CaseID, fileTransferResults))
           )
         )
       }
