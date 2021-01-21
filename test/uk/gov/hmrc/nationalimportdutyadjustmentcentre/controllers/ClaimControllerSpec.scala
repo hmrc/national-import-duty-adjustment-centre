@@ -30,7 +30,7 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseRequest}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse, CreateClaimResult, UploadedFile}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.ClaimService
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
@@ -38,7 +38,8 @@ import scala.concurrent.Future
 
 class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
 
-  private val claimRequest = CreateClaimRequest("some-id", "some-claim-type")
+  private val claimRequest = CreateClaimRequest("some-id", "some-claim-type", Seq.empty)
+  private val uploadedFile = UploadedFile("upscanReference", "downloadURL", "checksum", "fileName", "mimeType")
 
   private val mockClaimService = mock[ClaimService]
 
@@ -62,7 +63,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
 
     "return 201" when {
 
-      "request succeeds" in {
+      "create-case request succeeds with no files to upload" in {
         when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
           Future.successful(eisSuccessResponse)
         )
@@ -71,7 +72,33 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
 
         status(result) must be(CREATED)
         contentAsJson(result) mustBe toJson(
-          CreateClaimResponse(correlationId = "xyz", error = None, result = Some(eisSuccessResponse.CaseID))
+          CreateClaimResponse(
+            correlationId = "xyz",
+            error = None,
+            result = Some(CreateClaimResult(eisSuccessResponse.CaseID, Seq.empty))
+          )
+        )
+      }
+
+      "create-case request succeeds and file uploads succeed" in {
+        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+          Future.successful(eisSuccessResponse)
+        )
+
+        // TODO create/mock a FileTransferService
+
+        val request = claimRequest.copy(uploads = Seq(uploadedFile))
+
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(request))).get
+
+        status(result) must be(CREATED)
+        contentAsJson(result) mustBe toJson(
+          CreateClaimResponse(
+            correlationId = "xyz",
+            error = None,
+            result = Some(CreateClaimResult(eisSuccessResponse.CaseID, Seq.empty))
+          )
         )
       }
     }

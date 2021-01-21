@@ -18,9 +18,8 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 
 import play.api.libs.json.{Json, OFormat}
 
-case class CreateClaimRequest(userId: String, claimType: String, uploads: Seq[UploadedFile])
+case class CreateClaimResult(caseReference: String, fileTransferResults: Seq[FileTransferResult])
 
-object CreateClaimRequest {
-
-  implicit val format: OFormat[CreateClaimRequest] = Json.format[CreateClaimRequest]
+object CreateClaimResult {
+  implicit val format: OFormat[CreateClaimResult] = Json.format[CreateClaimResult]
 }

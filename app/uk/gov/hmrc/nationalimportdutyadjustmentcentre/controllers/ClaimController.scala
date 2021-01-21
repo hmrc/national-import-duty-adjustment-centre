@@ -17,18 +17,12 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
 import java.util.UUID
-
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  ApiError,
-  EISCreateCaseError,
-  EISCreateCaseRequest,
-  EISCreateCaseSuccess
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse, CreateClaimResult}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseRequest, EISCreateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.ClaimService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -47,7 +41,7 @@ class ClaimController @Inject() (
       withJsonBody[CreateClaimRequest] { createClaimRequest: CreateClaimRequest =>
         val correlationId = request.headers
           .get("x-correlation-id")
-          .getOrElse(UUID.randomUUID().toString()) // TODO understand why NDRC does this
+          .getOrElse(UUID.randomUUID().toString) // TODO understand why NDRC does this
 
         val eisCreateCaseRequest = EISCreateCaseRequest(
           AcknowledgementReference = correlationId.replace("-", ""),
@@ -58,7 +52,11 @@ class ClaimController @Inject() (
 
         claimService.createClaim(eisCreateCaseRequest, correlationId) map {
           case success: EISCreateCaseSuccess =>
-            Created(Json.toJson(CreateClaimResponse(correlationId = correlationId, result = Some(success.CaseID))))
+            Created(
+              Json.toJson(
+                CreateClaimResponse(correlationId = correlationId, result = Some(CreateClaimResult(success.CaseID, Seq.empty)))
+              )
+            )
           case error: EISCreateCaseError =>
             BadRequest(
               Json.toJson(
