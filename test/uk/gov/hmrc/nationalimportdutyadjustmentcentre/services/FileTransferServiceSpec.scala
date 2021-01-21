@@ -14,7 +14,7 @@ class FileTransferServiceSpec extends UnitSpec with ScalaFutures {
       "transferFile called" in {
 
         val uploadedFiles = Seq(uploadedFile1, uploadedFile2)
-        val transferResults = service.transfer(uploadedFiles).futureValue
+        val transferResults = service.transfer("caseReferenceNumber", uploadedFiles).futureValue
 
         transferResults.length must be(uploadedFiles.length)
         transferResults.head.upscanReference must be (uploadedFile1.upscanReference)
