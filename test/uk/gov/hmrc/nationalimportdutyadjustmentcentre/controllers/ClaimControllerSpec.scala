@@ -45,7 +45,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
   private val mockFileTransferService = mock[FileTransferService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
-    .overrides(bind[MicroserviceAuthConnector].to(mockAuthConnector), bind[ClaimService].to(mockClaimService))
+    .overrides(bind[MicroserviceAuthConnector].to(mockAuthConnector), bind[ClaimService].to(mockClaimService), bind[FileTransferService].to(mockFileTransferService))
     .build()
 
   override protected def beforeEach(): Unit = {
@@ -67,6 +67,9 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
       "create-case request succeeds with no files to upload" in {
         when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
           Future.successful(eisSuccessResponse)
+        )
+        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, Seq.empty)).thenReturn(
+          Future.successful(Seq.empty)
         )
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
