@@ -43,7 +43,10 @@ trait TestData {
       )
   )
 
-  val eisSuccessResponse: EISCreateCaseSuccess = EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
-  val eisFailResponse: EISCreateCaseError    = EISCreateCaseError("timestamp", "correlationId", "errorCode", "errorMessage")
+  val eisSuccessResponse: EISCreateCaseSuccess =
+    EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
+
+  val eisFailResponse: EISCreateCaseError =
+    EISCreateCaseError("timestamp", "correlationId", "errorCode", "errorMessage")
 
 }
