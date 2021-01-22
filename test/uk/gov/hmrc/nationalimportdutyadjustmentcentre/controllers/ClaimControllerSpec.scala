@@ -30,20 +30,32 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseRequest}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, CreateClaimResponse}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.ClaimService
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
+  CreateClaimRequest,
+  CreateClaimResponse,
+  CreateClaimResult,
+  FileTransferResult,
+  UploadedFile
+}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{ClaimService, FileTransferService}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
+import java.time.ZonedDateTime
 import scala.concurrent.Future
 
 class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
 
-  private val claimRequest = CreateClaimRequest("some-id", "some-claim-type")
+  private val claimRequest = CreateClaimRequest("some-id", "some-claim-type", Seq.empty)
 
-  private val mockClaimService = mock[ClaimService]
+  private val mockClaimService        = mock[ClaimService]
+  private val mockFileTransferService = mock[FileTransferService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
-    .overrides(bind[MicroserviceAuthConnector].to(mockAuthConnector), bind[ClaimService].to(mockClaimService))
+    .overrides(
+      bind[MicroserviceAuthConnector].to(mockAuthConnector),
+      bind[ClaimService].to(mockClaimService),
+      bind[FileTransferService].to(mockFileTransferService)
+    )
     .build()
 
   override protected def beforeEach(): Unit = {
@@ -62,16 +74,57 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
 
     "return 201" when {
 
-      "request succeeds" in {
+      "create-case request succeeds with no files to upload" in {
         when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
           Future.successful(eisSuccessResponse)
+        )
+        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, Seq.empty)).thenReturn(
+          Future.successful(Seq.empty)
         )
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
 
         status(result) must be(CREATED)
         contentAsJson(result) mustBe toJson(
-          CreateClaimResponse(correlationId = "xyz", error = None, result = Some(eisSuccessResponse.CaseID))
+          CreateClaimResponse(
+            correlationId = "xyz",
+            error = None,
+            result = Some(CreateClaimResult(eisSuccessResponse.CaseID, Seq.empty))
+          )
+        )
+      }
+
+      "create-case request succeeds and file uploads succeed" in {
+        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+          Future.successful(eisSuccessResponse)
+        )
+
+        val uploads = uploadedFiles("upscanReference")
+        val fileTransferResults = Seq(
+          FileTransferResult(
+            upscanReference = "upscanReference",
+            success = true,
+            httpStatus = 202,
+            transferredAt = ZonedDateTime.now.toLocalDateTime
+          )
+        )
+
+        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, uploads)).thenReturn(
+          Future.successful(fileTransferResults)
+        )
+
+        val request = claimRequest.copy(uploads = uploads)
+
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(request))).get
+
+        status(result) must be(CREATED)
+        contentAsJson(result) mustBe toJson(
+          CreateClaimResponse(
+            correlationId = "xyz",
+            error = None,
+            result = Some(CreateClaimResult(eisSuccessResponse.CaseID, fileTransferResults))
+          )
         )
       }
     }

@@ -39,7 +39,7 @@ class ClaimServiceSpec extends UnitSpec with ScalaFutures with TestData {
   val connector: CreateCaseConnector = mock[CreateCaseConnector]
   val service: ClaimService          = new ClaimService(connector)
 
-  val connectorSuccessResponse = mock[EISCreateCaseSuccess]
+  val connectorSuccessResponse: EISCreateCaseSuccess = mock[EISCreateCaseSuccess]
 
   "ClaimService" should {
 
@@ -50,7 +50,7 @@ class ClaimServiceSpec extends UnitSpec with ScalaFutures with TestData {
         when(connector.submitClaim(any[EISCreateCaseRequest], anyString())(any(), any())).thenReturn(
           Future.successful(connectorSuccessResponse)
         )
-        val request  = CreateClaimRequest("user-id", "claimType")
+        val request  = CreateClaimRequest("user-id", "claimType", Seq.empty)
         val response = service.createClaim(eisCreateCaseRequest(request), "xyz").futureValue
 
         response must be(connectorSuccessResponse)
