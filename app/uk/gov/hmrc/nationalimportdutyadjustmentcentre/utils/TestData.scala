@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils
 
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.CreateClaimRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, UploadedFile}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
   EISCreateCaseError,
   EISCreateCaseRequest,
@@ -32,7 +32,18 @@ trait TestData {
     Content = EISCreateCaseRequest.Content.from(createClaimRequest)
   )
 
-  val eisSuccessResponse = EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
-  val eisFailResponse    = EISCreateCaseError("timestamp", "correlationId", "errorCode", "errorMessage")
+  def uploadedFiles(upscanReferences: String*): Seq[UploadedFile] = upscanReferences.map(
+    upscanReference =>
+      UploadedFile(
+        upscanReference = upscanReference,
+        downloadUrl = s"downloadURL$upscanReference",
+        checksum = s"checksum$upscanReference",
+        fileName = s"fileName$upscanReference",
+        fileMimeType = s"mimeType$upscanReference"
+      )
+  )
+
+  val eisSuccessResponse: EISCreateCaseSuccess = EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
+  val eisFailResponse: EISCreateCaseError    = EISCreateCaseError("timestamp", "correlationId", "errorCode", "errorMessage")
 
 }

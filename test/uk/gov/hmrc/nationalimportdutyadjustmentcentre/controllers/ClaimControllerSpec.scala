@@ -99,7 +99,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           Future.successful(eisSuccessResponse)
         )
 
-        val uploadedFiles = Seq(UploadedFile("upscanReference", "downloadURL", "checksum", "fileName", "mimeType"))
+        val uploads = uploadedFiles("upscanReference")
         val fileTransferResults = Seq(
           FileTransferResult(
             upscanReference = "upscanReference",
@@ -109,11 +109,11 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           )
         )
 
-        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, uploadedFiles)).thenReturn(
+        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, uploads)).thenReturn(
           Future.successful(fileTransferResults)
         )
 
-        val request = claimRequest.copy(uploads = uploadedFiles)
+        val request = claimRequest.copy(uploads = uploads)
 
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(request))).get
