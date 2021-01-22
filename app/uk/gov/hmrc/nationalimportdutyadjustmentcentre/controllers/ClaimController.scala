@@ -76,7 +76,7 @@ class ClaimController @Inject() (
             }
 
           case error: EISCreateCaseError =>
-            Future.successful(
+            Future(
               BadRequest(
                 Json.toJson(
                   CreateClaimResponse(
