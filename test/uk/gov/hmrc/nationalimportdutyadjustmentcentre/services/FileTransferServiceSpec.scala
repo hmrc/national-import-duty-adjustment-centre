@@ -44,7 +44,7 @@ class FileTransferServiceSpec extends UnitSpec with ScalaFutures with TestData {
     "return a successful FileTransferResult per uploaded file" when {
       "transferFile called" in {
 
-        when(mockConnector.transferFile(any(), any())(any())).thenReturn(Future.successful(mockFileTransferResult))
+        when(mockConnector.transferFile(any())(any())).thenReturn(Future.successful(mockFileTransferResult))
 
         val uploads         = uploadedFiles("upscanReference1", "upscanReference2")
         val transferResults = service.transferFiles("caseReferenceNumber", "conversationId", uploads).futureValue

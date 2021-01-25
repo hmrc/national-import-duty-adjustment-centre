@@ -28,9 +28,9 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
 
   final lazy val url = config.fileTransferBaseUrl + config.fileTransferPath
 
-  def transferFile(fileTransferRequest: TraderServicesFileTransferRequest, correlationId: String)(implicit
-    hc: HeaderCarrier
-  ): Future[FileTransferResult] =
+  def transferFile(
+    fileTransferRequest: TraderServicesFileTransferRequest
+  )(implicit hc: HeaderCarrier): Future[FileTransferResult] =
     http
       .POST[TraderServicesFileTransferRequest, FileTransferResult](url, fileTransferRequest)
 

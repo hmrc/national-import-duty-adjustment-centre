@@ -39,14 +39,13 @@ class FileTransferService @Inject() (fileTransferConnector: FileTransferConnecto
               .fromUploadedFile(
                 caseReferenceNumber,
                 conversationId,
-                correlationId = UUID.randomUUID().toString(),
                 applicationName = "NIDAC",
                 batchSize = uploadedFiles.size,
                 batchCount = index + 1,
                 uploadedFile = file
               )
         }
-        .map(fileTransferConnector.transferFile(_, conversationId))
+        .map(fileTransferConnector.transferFile(_))
     )
 
 }
