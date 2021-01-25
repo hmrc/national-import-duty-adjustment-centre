@@ -38,6 +38,14 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
     throwConfigNotFoundError("eis.createcaseapi.environment")
   )
 
+  val fileTransferBaseUrl: String = servicesConfig.baseUrl("trader-services.file-transfer")
+
+  val fileTransferPath: String =
+    servicesConfig.getConfString(
+      "trader-services.file-transfer.path",
+      throwConfigNotFoundError("trader-services.file-transfer.path")
+    )
+
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
 
   val graphiteHost: String =

@@ -16,24 +16,36 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
+import java.util.UUID
+
+import javax.inject.Inject
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferResult, UploadedFile}
 
-import java.time.ZonedDateTime
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class FileTransferService {
+class FileTransferService @Inject() (fileTransferConnector: FileTransferConnector)(implicit ec: ExecutionContext) {
 
-  def transfer(caseReference: String, uploads: Seq[UploadedFile]): Future[Seq[FileTransferResult]] =
-    Future.successful(
-      uploads.map(
-        upload =>
-          FileTransferResult(
-            upscanReference = upload.upscanReference,
-            success = true,
-            httpStatus = 202,
-            transferredAt = ZonedDateTime.now.toLocalDateTime
-          )
-      )
+  def transferFiles(caseReferenceNumber: String, conversationId: String, uploadedFiles: Seq[UploadedFile])(implicit
+    hc: HeaderCarrier
+  ): Future[Seq[FileTransferResult]] =
+    Future.sequence(
+      uploadedFiles.zipWithIndex
+        .map {
+          case (file, index) =>
+            TraderServicesFileTransferRequest
+              .fromUploadedFile(
+                caseReferenceNumber,
+                conversationId,
+                applicationName = "NIDAC",
+                batchSize = uploadedFiles.size,
+                batchCount = index + 1,
+                uploadedFile = file
+              )
+        }
+        .map(fileTransferConnector.transferFile(_))
     )
 
 }
