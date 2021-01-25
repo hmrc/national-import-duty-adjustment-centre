@@ -16,10 +16,8 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
-import java.time.LocalDateTime
-
 import javax.inject.Inject
-import uk.gov.hmrc.http.{HeaderCarrier, HttpPost, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpPost}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.FileTransferResult
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
@@ -34,19 +32,6 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
     hc: HeaderCarrier
   ): Future[FileTransferResult] =
     http
-      .POST[TraderServicesFileTransferRequest, HttpResponse](url, fileTransferRequest)
-      .map(
-        response =>
-          FileTransferResult(
-            fileTransferRequest.upscanReference,
-            isSuccess(response),
-            response.status,
-            LocalDateTime.now(),
-            None
-          )
-      )
-
-  private def isSuccess(response: HttpResponse): Boolean =
-    response.status >= 200 && response.status < 300
+      .POST[TraderServicesFileTransferRequest, FileTransferResult](url, fileTransferRequest)
 
 }
