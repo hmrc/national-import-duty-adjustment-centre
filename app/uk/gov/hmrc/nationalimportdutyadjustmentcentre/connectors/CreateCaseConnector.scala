@@ -38,8 +38,7 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
   val url = config.eisBaseUrl + config.eisCreateCaseApiPath
 
   def submitClaim(request: EISCreateCaseRequest, correlationId: String)(implicit
-    hc: HeaderCarrier,
-    ec: ExecutionContext
+    hc: HeaderCarrier
   ): Future[EISCreateCaseResponse] =
     http.POST[EISCreateCaseRequest, EISCreateCaseResponse](url, request)(
       implicitly[Writes[EISCreateCaseRequest]],

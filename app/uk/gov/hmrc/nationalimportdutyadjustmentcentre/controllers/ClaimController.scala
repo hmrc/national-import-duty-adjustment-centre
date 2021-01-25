@@ -63,15 +63,16 @@ class ClaimController @Inject() (
 
         claimService.createClaim(eisCreateCaseRequest, correlationId) flatMap {
           case success: EISCreateCaseSuccess =>
-            fileTransferService.transfer(success.CaseID, createClaimRequest.uploads) map { uploadResults =>
-              Created(
-                Json.toJson(
-                  CreateClaimResponse(
-                    correlationId = correlationId,
-                    result = Some(CreateClaimResult(success.CaseID, uploadResults))
+            fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploads) map {
+              uploadResults =>
+                Created(
+                  Json.toJson(
+                    CreateClaimResponse(
+                      correlationId = correlationId,
+                      result = Some(CreateClaimResult(success.CaseID, uploadResults))
+                    )
                   )
                 )
-              )
 
             }
 

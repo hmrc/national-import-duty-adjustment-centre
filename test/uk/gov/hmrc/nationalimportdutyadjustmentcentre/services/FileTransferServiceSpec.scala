@@ -16,24 +16,40 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatestplus.mockito.MockitoSugar.mock
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.FileTransferResult
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
+import scala.concurrent.{ExecutionContext, Future}
+
 class FileTransferServiceSpec extends UnitSpec with ScalaFutures with TestData {
-  val service: FileTransferService = new FileTransferService()
+
+  implicit val executionContext: ExecutionContext =
+    scala.concurrent.ExecutionContext.Implicits.global
+
+  private implicit val hc: HeaderCarrier = HeaderCarrier()
+
+  val mockConnector: FileTransferConnector = mock[FileTransferConnector]
+  val service: FileTransferService         = new FileTransferService(mockConnector)
+
+  val mockFileTransferResult: FileTransferResult = mock[FileTransferResult]
 
   "FileTransferService" should {
     "return a successful FileTransferResult per uploaded file" when {
       "transferFile called" in {
 
+        when(mockConnector.transferFile(any(), any())(any())).thenReturn(Future.successful(mockFileTransferResult))
+
         val uploads         = uploadedFiles("upscanReference1", "upscanReference2")
-        val transferResults = service.transfer("caseReferenceNumber", uploads).futureValue
+        val transferResults = service.transferFiles("caseReferenceNumber", "conversationId", uploads).futureValue
 
         transferResults.length must be(uploads.length)
-        transferResults.head.upscanReference must be(uploads.head.upscanReference)
-        transferResults(1).upscanReference must be(uploads(1).upscanReference)
-
       }
     }
   }

@@ -78,9 +78,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
           Future.successful(eisSuccessResponse)
         )
-        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, Seq.empty)).thenReturn(
-          Future.successful(Seq.empty)
-        )
+        when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(Future.successful(Seq.empty))
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
 
@@ -109,7 +107,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           )
         )
 
-        when(mockFileTransferService.transfer(eisSuccessResponse.CaseID, uploads)).thenReturn(
+        when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(
           Future.successful(fileTransferResults)
         )
 

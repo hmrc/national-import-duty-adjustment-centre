@@ -38,6 +38,9 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
     throwConfigNotFoundError("eis.createcaseapi.environment")
   )
 
+  val fileTransferUrl: String =
+    servicesConfig.getConfString("file-transfer.url", throwConfigNotFoundError("file-transfer.url"))
+
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
 
   val graphiteHost: String =
