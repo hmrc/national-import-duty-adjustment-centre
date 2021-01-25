@@ -28,7 +28,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext) {
 
-  final lazy val url = config.fileTransferUrl
+  final lazy val url = config.fileTransferBaseUrl + config.fileTransferPath
 
   def transferFile(fileTransferRequest: TraderServicesFileTransferRequest, correlationId: String)(implicit
     hc: HeaderCarrier
