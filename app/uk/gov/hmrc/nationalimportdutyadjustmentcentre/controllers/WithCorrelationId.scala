@@ -25,8 +25,8 @@ import scala.concurrent.{ExecutionContext, Future}
 trait WithCorrelationId { self: Results =>
 
   protected def withCorrelationId(
-                                   f: String => Future[Result]
-                                 )(implicit ec: ExecutionContext, request: Request[_]): Future[Result] =
+    f: String => Future[Result]
+  )(implicit ec: ExecutionContext, request: Request[_]): Future[Result] =
     request.headers.get("x-correlation-id") match {
       case Some(value) => f(value)
       case None =>
