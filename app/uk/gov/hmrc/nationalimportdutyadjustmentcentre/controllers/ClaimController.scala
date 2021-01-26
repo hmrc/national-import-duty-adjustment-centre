@@ -45,56 +45,53 @@ class ClaimController @Inject() (
   claimService: ClaimService,
   fileTransferService: FileTransferService
 )(implicit ec: ExecutionContext)
-    extends BackendController(cc) with AuthActions {
+    extends BackendController(cc) with AuthActions with WithCorrelationId {
 
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withAuthorised {
-      withJsonBody[CreateClaimRequest] { createClaimRequest: CreateClaimRequest =>
-        val correlationId = request.headers
-          .get("x-correlation-id")
-          .getOrElse(UUID.randomUUID().toString) // TODO understand why NDRC does this
+      withCorrelationId { correlationId: String =>
+        withJsonBody[CreateClaimRequest] { createClaimRequest: CreateClaimRequest =>
+          val eisCreateCaseRequest = EISCreateCaseRequest(
+            AcknowledgementReference = correlationId.replace("-", ""),
+            ApplicationType = "NIDAC",
+            OriginatingSystem = "Digital",
+            Content = EISCreateCaseRequest.Content.from(createClaimRequest)
+          )
 
-        val eisCreateCaseRequest = EISCreateCaseRequest(
-          AcknowledgementReference = correlationId.replace("-", ""),
-          ApplicationType = "NIDAC",
-          OriginatingSystem = "Digital",
-          Content = EISCreateCaseRequest.Content.from(createClaimRequest)
-        )
+          claimService.createClaim(eisCreateCaseRequest, correlationId) flatMap {
+            case success: EISCreateCaseSuccess =>
+              fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploads) map {
+                uploadResults =>
+                  Created(
+                    Json.toJson(
+                      CreateClaimResponse(
+                        correlationId = correlationId,
+                        result = Some(CreateClaimResult(success.CaseID, uploadResults))
+                      )
+                    )
+                  )
 
-        claimService.createClaim(eisCreateCaseRequest, correlationId) flatMap {
-          case success: EISCreateCaseSuccess =>
-            fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploads) map {
-              uploadResults =>
-                Created(
+              }
+
+            case error: EISCreateCaseError =>
+              Future(
+                BadRequest(
                   Json.toJson(
                     CreateClaimResponse(
                       correlationId = correlationId,
-                      result = Some(CreateClaimResult(success.CaseID, uploadResults))
-                    )
-                  )
-                )
-
-            }
-
-          case error: EISCreateCaseError =>
-            Future(
-              BadRequest(
-                Json.toJson(
-                  CreateClaimResponse(
-                    correlationId = correlationId,
-                    error = Some(
-                      ApiError(
-                        errorCode = error.errorCode.getOrElse("ERROR_UPSTREAM_UNDEFINED"),
-                        errorMessage = error.errorMessage
+                      error = Some(
+                        ApiError(
+                          errorCode = error.errorCode.getOrElse("ERROR_UPSTREAM_UNDEFINED"),
+                          errorMessage = error.errorMessage
+                        )
                       )
                     )
                   )
                 )
               )
-            )
+          }
         }
       }
     }
   }
-
 }

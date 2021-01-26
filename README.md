@@ -13,9 +13,9 @@ Ensure you get a JSON response from `curl -i http://localhost:8491/`
 
 ## API
 
-| Method | Url | RequestBody | Response | 
-| --- | --- | --- | --- |
-| POST | /create-claim | JSON - [request model](./app/uk/gov/hmrc/nationalimportdutyadjustmentcentre/models/CreateClaimRequest.scala) | JSON - [response model](./app/uk/gov/hmrc/nationalimportdutyadjustmentcentre/models/CreateClaimResponse.scala) |
+| Method | Url | Required Headers | RequestBody | Response | 
+| --- | --- | --- | --- | --- |
+| POST | /create-claim | x-correlation-id | JSON - [request model](./app/uk/gov/hmrc/nationalimportdutyadjustmentcentre/models/CreateClaimRequest.scala) | JSON - [response model](./app/uk/gov/hmrc/nationalimportdutyadjustmentcentre/models/CreateClaimResponse.scala) |
 
 ### License
 
