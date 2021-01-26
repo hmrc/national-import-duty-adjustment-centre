@@ -16,14 +16,16 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils
 
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, UploadedFile}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
   EISCreateCaseError,
   EISCreateCaseRequest,
   EISCreateCaseSuccess
 }
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, UploadedFile}
 
 trait TestData {
+
+  val claimRequest = CreateClaimRequest("some-id", "some-claim-type", uploadedFiles("reference"), Set("01"))
 
   def eisCreateCaseRequest(createClaimRequest: CreateClaimRequest): EISCreateCaseRequest = new EISCreateCaseRequest(
     AcknowledgementReference = "",

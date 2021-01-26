@@ -33,13 +33,17 @@ case class EISCreateCaseRequest(
 object EISCreateCaseRequest {
   implicit val formats: Format[EISCreateCaseRequest] = Json.format[EISCreateCaseRequest]
 
-  case class Content(ClaimType: String)
+  case class Content(ClaimType: String, DutyDetails: Seq[DutyDetail])
 
   object Content {
     implicit val formats: Format[Content] = Json.format[Content]
 
     def from(request: CreateClaimRequest): Content =
-      Content(ClaimType = request.claimType)
+      Content(
+        ClaimType = request.claimType,
+        // TODO - remove hard-coded values for paid and due amounts
+        DutyDetails = request.reclaimDutyTypes.map(value => DutyDetail(value, "0", "0")).toSeq
+      )
 
   }
 

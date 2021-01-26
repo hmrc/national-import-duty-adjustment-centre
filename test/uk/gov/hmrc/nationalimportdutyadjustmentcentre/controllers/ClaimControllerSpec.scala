@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
+import java.time.ZonedDateTime
+
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.{reset, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -31,21 +33,16 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseRequest}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
-  CreateClaimRequest,
   CreateClaimResponse,
   CreateClaimResult,
-  FileTransferResult,
-  UploadedFile
+  FileTransferResult
 }
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{ClaimService, FileTransferService}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
-import java.time.ZonedDateTime
 import scala.concurrent.Future
 
 class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
-
-  private val claimRequest = CreateClaimRequest("some-id", "some-claim-type", Seq.empty)
 
   private val mockClaimService        = mock[ClaimService]
   private val mockFileTransferService = mock[FileTransferService]
