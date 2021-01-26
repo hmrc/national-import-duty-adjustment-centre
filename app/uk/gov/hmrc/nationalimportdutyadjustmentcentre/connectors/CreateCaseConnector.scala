@@ -35,7 +35,7 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
       EISCreateCaseError.fromStatusAndMessage
     ) with PegaConnector {
 
-  val url = config.eisBaseUrl + config.eisCreateCaseApiPath
+  val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
   def submitClaim(request: EISCreateCaseRequest, correlationId: String)(implicit
     hc: HeaderCarrier
@@ -43,7 +43,7 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
     http.POST[EISCreateCaseRequest, EISCreateCaseResponse](url, request)(
       implicitly[Writes[EISCreateCaseRequest]],
       readFromJsonSuccessOrFailure,
-      HeaderCarrier(authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")))
+      hc.copy(authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")))
         .withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*),
       implicitly[ExecutionContext]
     )
