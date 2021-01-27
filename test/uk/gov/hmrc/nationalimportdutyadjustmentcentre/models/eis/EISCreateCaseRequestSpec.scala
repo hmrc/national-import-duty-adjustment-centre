@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
+package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
-case class CreateClaimRequest(
-  userId: String,
-  claimType: String,
-  uploads: Seq[UploadedFile],
-  reclaimDutyTypes: Set[String],
-  bankDetails: Option[BankDetails]
-)
+class EISCreateCaseRequestSpec extends UnitSpec with TestData {
 
-object CreateClaimRequest {
+  "EISCreateCaseRequest" should {
 
-  implicit val format: OFormat[CreateClaimRequest] = Json.format[CreateClaimRequest]
+    "create Content from valid CreateClaimRequest" in {
+
+      EISCreateCaseRequest.Content.from(claimRequest) must be(content)
+    }
+  }
+
 }

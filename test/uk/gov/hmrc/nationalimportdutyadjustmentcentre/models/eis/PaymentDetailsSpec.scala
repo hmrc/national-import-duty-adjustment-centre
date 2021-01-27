@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
+package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.BankDetails
 
-case class CreateClaimRequest(
-  userId: String,
-  claimType: String,
-  uploads: Seq[UploadedFile],
-  reclaimDutyTypes: Set[String],
-  bankDetails: Option[BankDetails]
-)
+class PaymentDetailsSpec extends UnitSpec {
 
-object CreateClaimRequest {
+  "PaymentDetails" should {
 
-  implicit val format: OFormat[CreateClaimRequest] = Json.format[CreateClaimRequest]
+    "be created from valid BankDetails" in {
+
+      val bankDetails = BankDetails("name", "sort", "number")
+
+      PaymentDetails.apply(bankDetails) must be(PaymentDetails("name", "number", "sort"))
+    }
+  }
 }
