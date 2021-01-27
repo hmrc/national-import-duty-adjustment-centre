@@ -50,8 +50,7 @@ class ClaimServiceSpec extends UnitSpec with ScalaFutures with TestData {
         when(connector.submitClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
           Future.successful(connectorSuccessResponse)
         )
-        val request  = CreateClaimRequest("user-id", "claimType", Seq.empty)
-        val response = service.createClaim(eisCreateCaseRequest(request), "xyz").futureValue
+        val response = service.createClaim(eisCreateCaseRequest(claimRequest), "xyz").futureValue
 
         response must be(connectorSuccessResponse)
       }
