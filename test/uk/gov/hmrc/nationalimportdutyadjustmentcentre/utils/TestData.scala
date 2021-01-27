@@ -16,22 +16,30 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils
 
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  EISCreateCaseError,
-  EISCreateCaseRequest,
-  EISCreateCaseSuccess
-}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimRequest, UploadedFile}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{BankDetails, CreateClaimRequest, UploadedFile}
 
 trait TestData {
 
-  val claimRequest = CreateClaimRequest("some-id", "some-claim-type", uploadedFiles("reference"), Set("01"))
+  val claimRequest = CreateClaimRequest(
+    userId = "some-id",
+    claimType = "some-claim-type",
+    uploads = uploadedFiles("reference"),
+    reclaimDutyTypes = Set("01"),
+    bankDetails = Some(BankDetails("account name", "001122", "12345678"))
+  )
+
+  val content = EISCreateCaseRequest.Content(
+    ClaimType = "some-claim-type",
+    DutyDetails = Seq(DutyDetail("01", "0", "0")),
+    PaymentDetails = Some(PaymentDetails("account name", "12345678", "001122"))
+  )
 
   def eisCreateCaseRequest(createClaimRequest: CreateClaimRequest): EISCreateCaseRequest = new EISCreateCaseRequest(
     AcknowledgementReference = "",
     ApplicationType = "",
     OriginatingSystem = "",
-    Content = EISCreateCaseRequest.Content.from(createClaimRequest)
+    Content = EISCreateCaseRequest.Content(createClaimRequest)
   )
 
   def uploadedFiles(upscanReferences: String*): Seq[UploadedFile] = upscanReferences.map(

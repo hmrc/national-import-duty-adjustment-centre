@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
+package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.BankDetails
 
-case class CreateClaimRequest(
-  userId: String,
-  claimType: String,
-  uploads: Seq[UploadedFile],
-  reclaimDutyTypes: Set[String],
-  bankDetails: Option[BankDetails]
-)
+case class PaymentDetails(AccountName: String, AccountNumber: String, SortCode: String)
 
-object CreateClaimRequest {
+object PaymentDetails {
+  implicit val format: OFormat[PaymentDetails] = Json.format[PaymentDetails]
 
-  implicit val format: OFormat[CreateClaimRequest] = Json.format[CreateClaimRequest]
+  def apply(bankDetails: BankDetails): PaymentDetails =
+    new PaymentDetails(bankDetails.accountName, bankDetails.accountNumber, bankDetails.sortCode)
+
 }

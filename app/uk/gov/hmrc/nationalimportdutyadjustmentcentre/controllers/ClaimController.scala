@@ -55,7 +55,7 @@ class ClaimController @Inject() (
             AcknowledgementReference = correlationId.replace("-", ""),
             ApplicationType = "NIDAC",
             OriginatingSystem = "Digital",
-            Content = EISCreateCaseRequest.Content.from(createClaimRequest)
+            Content = EISCreateCaseRequest.Content(createClaimRequest)
           )
 
           claimService.createClaim(eisCreateCaseRequest, correlationId) flatMap {
