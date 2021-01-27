@@ -25,7 +25,7 @@ class EISCreateCaseRequestSpec extends UnitSpec with TestData {
 
     "create Content from valid CreateClaimRequest" in {
 
-      EISCreateCaseRequest.Content.from(claimRequest) must be(content)
+      EISCreateCaseRequest.Content(claimRequest) must be(content)
     }
   }
 

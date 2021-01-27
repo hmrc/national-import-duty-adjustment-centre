@@ -39,7 +39,7 @@ trait TestData {
     AcknowledgementReference = "",
     ApplicationType = "",
     OriginatingSystem = "",
-    Content = EISCreateCaseRequest.Content.from(createClaimRequest)
+    Content = EISCreateCaseRequest.Content(createClaimRequest)
   )
 
   def uploadedFiles(upscanReferences: String*): Seq[UploadedFile] = upscanReferences.map(
