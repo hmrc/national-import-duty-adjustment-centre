@@ -43,7 +43,10 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
     http.POST[EISCreateCaseRequest, EISCreateCaseResponse](url, request)(
       implicitly[Writes[EISCreateCaseRequest]],
       readFromJsonSuccessOrFailure,
-      hc.copy(authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")))
+      HeaderCarrier(
+        authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")),
+        requestId = hc.requestId
+      )
         .withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*),
       implicitly[ExecutionContext]
     )
