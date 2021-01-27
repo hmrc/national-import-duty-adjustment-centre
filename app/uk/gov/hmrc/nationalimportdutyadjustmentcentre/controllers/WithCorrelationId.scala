@@ -24,20 +24,19 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait WithCorrelationId { self: Results =>
 
+  private val missingXCorrelationIdResponse = BadRequest(
+    Json.obj(
+      "statusCode" -> JsNumber(BadRequest.header.status),
+      "message"    -> JsString("Missing header x-correlation-id")
+    )
+  )
+
   protected def withCorrelationId(
     f: String => Future[Result]
   )(implicit ec: ExecutionContext, request: Request[_]): Future[Result] =
     request.headers.get("x-correlation-id") match {
       case Some(value) => f(value)
-      case None =>
-        Future.successful(
-          BadRequest(
-            Json.obj(
-              "statusCode" -> JsNumber(BadRequest.header.status),
-              "message"    -> JsString("Missing header x-correlation-id")
-            )
-          )
-        )
+      case None        => Future.successful(missingXCorrelationIdResponse)
     }
 
 }
