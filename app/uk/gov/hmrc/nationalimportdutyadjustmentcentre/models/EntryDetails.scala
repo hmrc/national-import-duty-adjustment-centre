@@ -16,19 +16,12 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 
+import java.time.LocalDate
+
 import play.api.libs.json.{Json, OFormat}
 
-case class CreateClaimRequest(
-  userId: String,
-  contactDetails: ContactDetails,
-  claimType: String,
-  uploads: Seq[UploadedFile],
-  reclaimDutyTypes: Set[String],
-  bankDetails: Option[BankDetails],
-  entryDetails: EntryDetails
-)
+case class EntryDetails(entryProcessingUnit: String, entryNumber: String, entryDate: LocalDate)
 
-object CreateClaimRequest {
-
-  implicit val format: OFormat[CreateClaimRequest] = Json.format[CreateClaimRequest]
+object EntryDetails {
+  implicit val format: OFormat[EntryDetails] = Json.format[EntryDetails]
 }

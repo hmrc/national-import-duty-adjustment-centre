@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
+import java.time.format.DateTimeFormatter
+
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.CreateClaimRequest
 
@@ -36,6 +38,9 @@ object EISCreateCaseRequest {
   case class Content(
     ClaimType: String,
     ImporterDetails: ImporterDetails,
+    EntryProcessingUnit: String,
+    EntryNumber: String,
+    EntryDate: String,
     DutyDetails: Seq[DutyDetail],
     PaymentDetails: Option[PaymentDetails],
     FirstName: String,
@@ -45,10 +50,15 @@ object EISCreateCaseRequest {
   object Content {
     implicit val formats: Format[Content] = Json.format[Content]
 
+    val entryDataFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
     def apply(request: CreateClaimRequest): Content =
       Content(
         ClaimType = request.claimType,
         ImporterDetails = ImporterDetails(request.contactDetails),
+        EntryProcessingUnit = request.entryDetails.entryProcessingUnit,
+        EntryNumber = request.entryDetails.entryNumber,
+        EntryDate = entryDataFormatter.format(request.entryDetails.entryDate),
         // TODO - remove hard-coded values for paid and due amounts
         DutyDetails = request.reclaimDutyTypes.map(value => DutyDetail(value, "0", "0")).toSeq,
         PaymentDetails = request.bankDetails.map(PaymentDetails(_)),
