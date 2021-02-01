@@ -34,7 +34,7 @@ class EISCreateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuit
   val configuredRef: String = "CONFIGURED_REF"
 
   override lazy val app: Application = GuiceApplicationBuilder()
-    .configure("play.http.router" -> "testOnlyDoNotUseInAppConf.Routes")
+    .configure("application.router" -> "testOnlyDoNotUseInAppConf.Routes")
     .configure("testonly.stub.ref" -> configuredRef)
     .overrides(bind[MicroserviceAuthConnector].to(mockAuthConnector))
     .build()
