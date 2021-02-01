@@ -37,11 +37,14 @@ object EISCreateCaseRequest {
 
   case class Content(
     ClaimType: String,
+    ImporterDetails: ImporterDetails,
     EntryProcessingUnit: String,
     EntryNumber: String,
     EntryDate: String,
     DutyDetails: Seq[DutyDetail],
-    PaymentDetails: Option[PaymentDetails]
+    PaymentDetails: Option[PaymentDetails],
+    FirstName: String,
+    LastName: String
   )
 
   object Content {
@@ -52,12 +55,15 @@ object EISCreateCaseRequest {
     def apply(request: CreateClaimRequest): Content =
       Content(
         ClaimType = request.claimType,
+        ImporterDetails = ImporterDetails(request.contactDetails),
         EntryProcessingUnit = request.entryDetails.entryProcessingUnit,
         EntryNumber = request.entryDetails.entryNumber,
         EntryDate = entryDataFormatter.format(request.entryDetails.entryDate),
         // TODO - remove hard-coded values for paid and due amounts
         DutyDetails = request.reclaimDutyTypes.map(value => DutyDetail(value, "0", "0")).toSeq,
-        PaymentDetails = request.bankDetails.map(PaymentDetails(_))
+        PaymentDetails = request.bankDetails.map(PaymentDetails(_)),
+        FirstName = request.contactDetails.firstName,
+        LastName = request.contactDetails.lastName
       )
 
   }

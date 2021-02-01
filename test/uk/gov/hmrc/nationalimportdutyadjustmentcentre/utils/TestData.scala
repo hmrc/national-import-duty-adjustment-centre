@@ -21,6 +21,7 @@ import java.time.LocalDate
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   BankDetails,
+  ContactDetails,
   CreateClaimRequest,
   EntryDetails,
   UploadedFile
@@ -32,6 +33,7 @@ trait TestData {
 
   val claimRequest: CreateClaimRequest = CreateClaimRequest(
     userId = "some-id",
+    contactDetails = ContactDetails("Adam", "Smith", "adam@smith.com", "01234567890"),
     claimType = "some-claim-type",
     uploads = uploadedFiles("reference"),
     reclaimDutyTypes = Set("01"),
@@ -41,11 +43,14 @@ trait TestData {
 
   val content = EISCreateCaseRequest.Content(
     ClaimType = "some-claim-type",
+    ImporterDetails = ImporterDetails(Address("01234567890", "adam@smith.com")),
     EntryProcessingUnit = "012",
     EntryNumber = "123456Q",
     EntryDate = "20201231",
     DutyDetails = Seq(DutyDetail("01", "0", "0")),
-    PaymentDetails = Some(PaymentDetails("account name", "12345678", "001122"))
+    PaymentDetails = Some(PaymentDetails("account name", "12345678", "001122")),
+    FirstName = "Adam",
+    LastName = "Smith"
   )
 
   def eisCreateCaseRequest(createClaimRequest: CreateClaimRequest): EISCreateCaseRequest = new EISCreateCaseRequest(

@@ -23,7 +23,6 @@ import org.scalatestplus.mockito.MockitoSugar.mock
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.CreateClaimRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseRequest, EISCreateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
