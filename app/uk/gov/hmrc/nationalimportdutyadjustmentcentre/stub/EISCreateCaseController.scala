@@ -21,10 +21,10 @@ import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
-import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case class SuccessResponse(
   CaseID: String,
@@ -51,17 +51,11 @@ object SuccessResponse {
 }
 
 @Singleton()
-class EISCreateCaseController @Inject() (servicesConfig: ServicesConfig, cc: ControllerComponents)
+class EISCreateCaseController @Inject() (appConfig: AppConfig, cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  private val okResponse = Ok(
-    Json.toJson(
-      SuccessResponse(CaseID = servicesConfig.getConfString("eis.createcaseapi.stub.ref", "DEFAULT_PEGA_REF"))
-    )
-  )
-
   def post(): Action[JsValue] = Action.async(parse.json) { _ =>
-    Future.successful(okResponse)
+    Future(Ok(Json.toJson(SuccessResponse(CaseID = appConfig.stubPegaCaseRef()))))
   }
 
 }
