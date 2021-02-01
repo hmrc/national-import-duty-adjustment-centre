@@ -38,6 +38,11 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
     throwConfigNotFoundError("eis.createcaseapi.environment")
   )
 
+  val stubPegaCaseRef: () => String = () =>
+    config
+      .getOptional[String]("testonly.stub.ref")
+      .getOrElse(throwConfigNotFoundError("testonly.stub.ref"))
+
   val fileTransferBaseUrl: String = servicesConfig.baseUrl("trader-services.file-transfer")
 
   val fileTransferPath: String =
