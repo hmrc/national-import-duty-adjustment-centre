@@ -11,3 +11,5 @@
 
 # Add all the application routes to the prod.routes file
 ->         /                          prod.Routes
+
+POST        /eis-stub/create-case             uk.gov.hmrc.nationalimportdutyadjustmentcentre.stub.EISCreateCaseController.post
