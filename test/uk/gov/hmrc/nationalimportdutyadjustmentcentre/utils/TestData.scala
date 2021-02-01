@@ -31,6 +31,7 @@ trait TestData {
   val entryDate: LocalDate = LocalDate.of(2020, 12, 31)
 
   val claimRequest: CreateClaimRequest = CreateClaimRequest(
+
     userId = "some-id",
     claimType = "some-claim-type",
     uploads = uploadedFiles("reference"),
