@@ -30,11 +30,11 @@ import scala.concurrent.Future
 import scala.util.Random
 
 case class SuccessResponse(
-                            CaseID: String,
-                            ProcessingDate: ZonedDateTime = ZonedDateTime.now(),
-                            Status: String = "OK",
-                            StatusText: String = "Case created"
-                          )
+  CaseID: String,
+  ProcessingDate: ZonedDateTime = ZonedDateTime.now(),
+  Status: String = "OK",
+  StatusText: String = "Case created"
+)
 
 object SuccessResponse {
 
@@ -54,7 +54,8 @@ object SuccessResponse {
 }
 
 @Singleton()
-class EISCreateCaseController @Inject() (servicesConfig: ServicesConfig, cc: ControllerComponents) extends BackendController(cc) {
+class EISCreateCaseController @Inject() (servicesConfig: ServicesConfig, cc: ControllerComponents)
+    extends BackendController(cc) {
 
   private val okResponse = Ok(
     Json.toJson(
