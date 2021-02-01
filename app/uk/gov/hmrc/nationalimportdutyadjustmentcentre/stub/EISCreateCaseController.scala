@@ -19,15 +19,12 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.stub
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.Future
-import scala.util.Random
 
 case class SuccessResponse(
   CaseID: String,
@@ -63,7 +60,7 @@ class EISCreateCaseController @Inject() (servicesConfig: ServicesConfig, cc: Con
     )
   )
 
-  def post(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def post(): Action[JsValue] = Action.async(parse.json) { _ =>
     Future.successful(okResponse)
   }
 
