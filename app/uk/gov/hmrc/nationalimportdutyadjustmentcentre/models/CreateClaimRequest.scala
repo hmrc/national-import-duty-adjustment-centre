@@ -24,6 +24,7 @@ case class CreateClaimRequest(
   claimType: String,
   uploads: Seq[UploadedFile],
   reclaimDutyTypes: Set[String],
+  repaymentType: String,
   bankDetails: Option[BankDetails],
   entryDetails: EntryDetails
 )

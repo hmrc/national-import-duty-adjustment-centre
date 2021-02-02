@@ -37,6 +37,7 @@ trait TestData {
     claimType = "some-claim-type",
     uploads = uploadedFiles("reference"),
     reclaimDutyTypes = Set("01"),
+    repaymentType = "BACS",
     bankDetails = Some(BankDetails("account name", "001122", "12345678")),
     entryDetails = EntryDetails("012", "123456Q", entryDate)
   )
