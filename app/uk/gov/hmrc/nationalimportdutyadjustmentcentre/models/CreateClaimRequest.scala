@@ -21,6 +21,7 @@ import play.api.libs.json.{Json, OFormat}
 case class CreateClaimRequest(
   userId: String,
   contactDetails: ContactDetails,
+  importerAddress: UkAddress,
   claimType: String,
   uploads: Seq[UploadedFile],
   reclaimDutyTypes: Set[String],

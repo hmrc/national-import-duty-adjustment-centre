@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import java.util.UUID
-
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}

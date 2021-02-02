@@ -17,15 +17,24 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import play.api.libs.json.{Json, OFormat}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.ContactDetails
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{ContactDetails, UkAddress}
 
-case class ImporterDetails(Address: Address)
+case class ImporterDetails(Name: String, Address: Address)
 
 object ImporterDetails {
   implicit val format: OFormat[ImporterDetails] = Json.format[ImporterDetails]
 
-  def apply(contactDetails: ContactDetails): ImporterDetails = new ImporterDetails(
-    Address = Address(EmailAddress = contactDetails.emailAddress, TelephoneNumber = contactDetails.telephoneNumber)
+  def apply(contactDetails: ContactDetails, address: UkAddress): ImporterDetails = new ImporterDetails(
+    Name = address.name,
+    Address = Address(
+      AddressLine1 = address.addressLine1,
+      AddressLine2 = address.addressLine2,
+      City = address.city,
+      PostalCode = address.postCode,
+      CountryCode = "GB",
+      EmailAddress = contactDetails.emailAddress,
+      TelephoneNumber = contactDetails.telephoneNumber
+    )
   )
 
 }
