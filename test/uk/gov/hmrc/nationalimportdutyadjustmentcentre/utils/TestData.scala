@@ -18,14 +18,8 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils
 
 import java.time.LocalDate
 
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
-  BankDetails,
-  ContactDetails,
-  CreateClaimRequest,
-  EntryDetails,
-  UploadedFile
-}
 
 trait TestData {
 
@@ -34,6 +28,7 @@ trait TestData {
   val claimRequest: CreateClaimRequest = CreateClaimRequest(
     userId = "some-id",
     contactDetails = ContactDetails("Adam", "Smith", "adam@smith.com", "01234567890"),
+    importerAddress = UkAddress("Import Co Ltd", "Address Line 1", Some("Address Line 2"), "City", "PO12CD"),
     claimType = "some-claim-type",
     uploads = uploadedFiles("reference"),
     reclaimDutyTypes = Set("01"),
@@ -43,7 +38,10 @@ trait TestData {
 
   val content = EISCreateCaseRequest.Content(
     ClaimType = "some-claim-type",
-    ImporterDetails = ImporterDetails(Address("01234567890", "adam@smith.com")),
+    ImporterDetails = ImporterDetails(
+      "Import Co Ltd",
+      Address("Address Line 1", Some("Address Line 2"), "City", "PO12CD", "GB", "01234567890", "adam@smith.com")
+    ),
     EntryProcessingUnit = "012",
     EntryNumber = "123456Q",
     EntryDate = "20201231",

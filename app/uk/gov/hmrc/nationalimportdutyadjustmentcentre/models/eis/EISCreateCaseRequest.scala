@@ -55,7 +55,7 @@ object EISCreateCaseRequest {
     def apply(request: CreateClaimRequest): Content =
       Content(
         ClaimType = request.claimType,
-        ImporterDetails = ImporterDetails(request.contactDetails),
+        ImporterDetails = ImporterDetails(request.contactDetails, request.importerAddress),
         EntryProcessingUnit = request.entryDetails.entryProcessingUnit,
         EntryNumber = request.entryDetails.entryNumber,
         EntryDate = entryDataFormatter.format(request.entryDetails.entryDate),
