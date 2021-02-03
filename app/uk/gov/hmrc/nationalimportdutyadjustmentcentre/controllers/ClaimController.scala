@@ -19,19 +19,14 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  ApiError,
-  EISCreateCaseError,
-  EISCreateCaseRequest,
-  EISCreateCaseSuccess
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
-  CreateClaimRequest,
   CreateClaimResponse,
-  CreateClaimResult
+  CreateClaimResult,
+  CreateEISClaimRequest
 }
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{ClaimService, FileTransferService}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +35,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class ClaimController @Inject() (
   val authConnector: MicroserviceAuthConnector,
   cc: ControllerComponents,
-  claimService: ClaimService,
+  createCaseConnector: CreateCaseConnector,
   fileTransferService: FileTransferService
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with AuthActions with WithCorrelationId {
@@ -48,17 +43,10 @@ class ClaimController @Inject() (
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withAuthorised {
       withCorrelationId { correlationId: String =>
-        withJsonBody[CreateClaimRequest] { createClaimRequest: CreateClaimRequest =>
-          val eisCreateCaseRequest = EISCreateCaseRequest(
-            AcknowledgementReference = correlationId.replace("-", ""),
-            ApplicationType = "NIDAC",
-            OriginatingSystem = "Digital",
-            Content = EISCreateCaseRequest.Content(createClaimRequest)
-          )
-
-          claimService.createClaim(eisCreateCaseRequest, correlationId) flatMap {
+        withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
+          createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap {
             case success: EISCreateCaseSuccess =>
-              fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploads) map {
+              fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
                 uploadResults =>
                   Created(
                     Json.toJson(
@@ -68,7 +56,6 @@ class ClaimController @Inject() (
                       )
                     )
                   )
-
               }
 
             case error: EISCreateCaseError =>

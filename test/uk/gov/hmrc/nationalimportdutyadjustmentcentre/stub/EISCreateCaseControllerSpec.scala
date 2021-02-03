@@ -20,7 +20,6 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -50,7 +49,7 @@ class EISCreateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuit
 
     "return 200 with Json payload containing configured case reference number" in {
       val result: Future[Result] =
-        route(app, post.withJsonBody(toJson(eisCreateCaseRequest(claimRequest)))).get
+        route(app, post.withJsonBody(claimRequest.eisRequest)).get
 
       status(result) must be(OK)
       (contentAsJson(result) \ "CaseID").as[String] must be(configuredRef)
