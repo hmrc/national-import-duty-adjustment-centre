@@ -16,10 +16,11 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsValue, Json, OFormat}
 
-case class BankDetails(accountName: String, sortCode: String, accountNumber: String)
+case class CreateEISClaimRequest(eisRequest: JsValue, uploadedFiles: Seq[UploadedFile])
 
-object BankDetails {
-  implicit val format: OFormat[BankDetails] = Json.format[BankDetails]
+object CreateEISClaimRequest {
+
+  implicit val format: OFormat[CreateEISClaimRequest] = Json.format[CreateEISClaimRequest]
 }

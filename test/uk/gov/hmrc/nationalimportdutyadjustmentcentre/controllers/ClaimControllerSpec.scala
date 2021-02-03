@@ -24,33 +24,33 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.Json
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json.toJson
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseRequest}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   CreateClaimResponse,
   CreateClaimResult,
   FileTransferResult
 }
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{ClaimService, FileTransferService}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import scala.concurrent.Future
 
 class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
 
-  private val mockClaimService        = mock[ClaimService]
+  private val mockCreateCaseConnector = mock[CreateCaseConnector]
   private val mockFileTransferService = mock[FileTransferService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(
       bind[MicroserviceAuthConnector].to(mockAuthConnector),
-      bind[ClaimService].to(mockClaimService),
+      bind[CreateCaseConnector].to(mockCreateCaseConnector),
       bind[FileTransferService].to(mockFileTransferService)
     )
     .build()
@@ -61,7 +61,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
   }
 
   override protected def afterEach(): Unit = {
-    reset(mockClaimService)
+    reset(mockCreateCaseConnector)
     super.afterEach()
   }
 
@@ -72,7 +72,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
     "return 201" when {
 
       "create-case request succeeds with no files to upload" in {
-        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisSuccessResponse)
         )
         when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(Future.successful(Seq.empty))
@@ -90,7 +90,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
       }
 
       "create-case request succeeds and file uploads succeed" in {
-        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisSuccessResponse)
         )
 
@@ -108,7 +108,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           Future.successful(fileTransferResults)
         )
 
-        val request = claimRequest.copy(uploads = uploads)
+        val request = claimRequest.copy(uploadedFiles = uploads)
 
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(request))).get
@@ -127,7 +127,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
     "return 400" when {
 
       "request fails" in {
-        when(mockClaimService.createClaim(any[EISCreateCaseRequest], anyString())(any())).thenReturn(
+        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisFailResponse)
         )
         val result: Future[Result] =
@@ -147,7 +147,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         val result: Future[Result] = route(app, post.withJsonBody(Json.obj("field" -> "value"))).get
 
         status(result) must be(BAD_REQUEST)
-        verifyNoInteractions(mockClaimService)
+        verifyNoInteractions(mockCreateCaseConnector)
       }
     }
   }

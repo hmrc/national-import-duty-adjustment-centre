@@ -17,13 +17,12 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
 import com.google.inject.Inject
-import play.api.libs.json.Writes
+import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
   EISCreateCaseError,
-  EISCreateCaseRequest,
   EISCreateCaseResponse,
   EISCreateCaseSuccess
 }
@@ -37,11 +36,9 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
 
   val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
-  def submitClaim(request: EISCreateCaseRequest, correlationId: String)(implicit
-    hc: HeaderCarrier
-  ): Future[EISCreateCaseResponse] =
-    http.POST[EISCreateCaseRequest, EISCreateCaseResponse](url, request)(
-      implicitly[Writes[EISCreateCaseRequest]],
+  def submitClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISCreateCaseResponse] =
+    http.POST[JsValue, EISCreateCaseResponse](url, request)(
+      implicitly[Writes[JsValue]],
       readFromJsonSuccessOrFailure,
       HeaderCarrier(
         authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")),
