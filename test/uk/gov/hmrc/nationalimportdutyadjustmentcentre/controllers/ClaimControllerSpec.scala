@@ -137,7 +137,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
-            error = Some(ApiError(eisFailResponse.errorCode.get, eisFailResponse.errorMessage)),
+            error = Some(ApiError(eisFailResponse.ErrorCode, Some(eisFailResponse.ErrorMessage))),
             result = None
           )
         )

@@ -64,12 +64,7 @@ class ClaimController @Inject() (
                   Json.toJson(
                     CreateClaimResponse(
                       correlationId = correlationId,
-                      error = Some(
-                        ApiError(
-                          errorCode = error.errorCode.getOrElse("ERROR_UPSTREAM_UNDEFINED"),
-                          errorMessage = error.errorMessage
-                        )
-                      )
+                      error = Some(ApiError(errorCode = error.ErrorCode, errorMessage = Some(error.ErrorMessage)))
                     )
                   )
                 )
