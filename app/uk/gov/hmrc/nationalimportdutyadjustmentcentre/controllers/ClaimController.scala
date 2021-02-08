@@ -44,32 +44,31 @@ class ClaimController @Inject() (
     withAuthorised {
       withCorrelationId { correlationId: String =>
         withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
-          createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap {
-            case success: EISCreateCaseSuccess =>
-              fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
-                uploadResults =>
-                  Created(
-                    Json.toJson(
-                      CreateClaimResponse(
-                        correlationId = correlationId,
-                        result = Some(CreateClaimResult(success.CaseID, uploadResults))
-                      )
-                    )
-                  )
-              }
-
-            case error: EISCreateCaseError =>
-              Future(
-                BadRequest(
-                  Json.toJson(
+          createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
+            val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
+              case success: EISCreateCaseSuccess =>
+                fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
+                  uploadResults =>
                     CreateClaimResponse(
                       correlationId = correlationId,
-                      error = Some(ApiError(errorCode = error.ErrorCode, errorMessage = Some(error.ErrorMessage)))
+                      result = Some(CreateClaimResult(success.CaseID, uploadResults))
                     )
+                }
+              case error: EISCreateCaseError =>
+                Future(
+                  CreateClaimResponse(
+                    correlationId = correlationId,
+                    error = Some(ApiError(errorCode = error.ErrorCode, errorMessage = Some(error.ErrorMessage)))
                   )
                 )
-              )
+            }
+
+            createClaimResponse map { response =>
+              Ok(Json.toJson(response))
+            }
+
           }
+
         }
       }
     }
