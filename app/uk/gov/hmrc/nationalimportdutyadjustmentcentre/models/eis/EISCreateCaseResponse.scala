@@ -30,51 +30,17 @@ object EISCreateCaseSuccess {
 
 }
 
-case class EISCreateCaseError(errorDetail: EISCreateCaseError.ErrorDetail) extends EISCreateCaseResponse {
-
-  def errorCode: Option[String]    = errorDetail.errorCode
-  def errorMessage: Option[String] = errorDetail.errorMessage
-
-}
+case class EISCreateCaseError(
+  ErrorCode: String,
+  ErrorMessage: String,
+  CorrelationID: Option[String] = None,
+  ProcessingDate: Option[String] = None
+) extends EISCreateCaseResponse
 
 object EISCreateCaseError {
 
-  def apply(timestamp: String, correlationId: String, errorCode: String, errorMessage: String): EISCreateCaseError =
-    EISCreateCaseError(errorDetail =
-      ErrorDetail(Some(correlationId), Some(timestamp), Some(errorCode), Some(errorMessage))
-    )
-
   def fromStatusAndMessage(status: Int, message: String): EISCreateCaseError =
-    EISCreateCaseError(errorDetail = ErrorDetail(None, None, Some(status.toString), Some(message)))
-
-  case class ErrorDetail(
-    correlationId: Option[String] = None,
-    timestamp: Option[String] = None,
-    errorCode: Option[String] = None,
-    errorMessage: Option[String] = None,
-    source: Option[String] = None,
-    sourceFaultDetail: Option[EISCreateCaseError.ErrorDetail.SourceFaultDetail] = None
-  )
-
-  object ErrorDetail {
-
-    case class SourceFaultDetail(
-      detail: Option[Seq[String]] = None,
-      restFault: Option[JsObject] = None,
-      soapFault: Option[JsObject] = None
-    )
-
-    object SourceFaultDetail {
-
-      implicit val formats: Format[SourceFaultDetail] =
-        Json.format[SourceFaultDetail]
-
-    }
-
-    implicit val formats: Format[ErrorDetail] =
-      Json.format[ErrorDetail]
-
-  }
+    EISCreateCaseError(status.toString, message)
 
   implicit val formats: Format[EISCreateCaseError] =
     Json.format[EISCreateCaseError]

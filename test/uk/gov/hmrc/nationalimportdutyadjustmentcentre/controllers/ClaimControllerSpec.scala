@@ -69,7 +69,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
 
     val post = FakeRequest("POST", "/create-claim")
 
-    "return 201" when {
+    "handle a successful request" when {
 
       "create-case request succeeds with no files to upload" in {
         when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
@@ -79,7 +79,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
 
-        status(result) must be(CREATED)
+        status(result) must be(OK)
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
@@ -113,7 +113,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(request))).get
 
-        status(result) must be(CREATED)
+        status(result) must be(OK)
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
@@ -122,9 +122,10 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
           )
         )
       }
+
     }
 
-    "return 400" when {
+    "handle an unsuccessful request" when {
 
       "request fails" in {
         when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
@@ -133,15 +134,19 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(claimRequest))).get
 
-        status(result) must be(BAD_REQUEST)
+        status(result) must be(OK)
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
-            error = Some(ApiError(eisFailResponse.errorCode.get, eisFailResponse.errorMessage)),
+            error = Some(ApiError(eisFailResponse.ErrorCode, Some(eisFailResponse.ErrorMessage))),
             result = None
           )
         )
       }
+
+    }
+
+    "handle an invalid request" when {
 
       "request is invalid" in {
         val result: Future[Result] = route(app, post.withJsonBody(Json.obj("field" -> "value"))).get
@@ -149,6 +154,7 @@ class ClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with T
         status(result) must be(BAD_REQUEST)
         verifyNoInteractions(mockCreateCaseConnector)
       }
+
     }
   }
 }

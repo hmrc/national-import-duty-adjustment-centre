@@ -40,6 +40,6 @@ trait TestData {
     EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
 
   val eisFailResponse: EISCreateCaseError =
-    EISCreateCaseError("timestamp", "correlationId", "errorCode", "errorMessage")
+    EISCreateCaseError("errorCode", "errorMessage", Some("correlationId"), Some("timestamp"))
 
 }
