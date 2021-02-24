@@ -32,7 +32,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class ClaimController @Inject() (
+class CreateClaimController @Inject()(
   val authConnector: MicroserviceAuthConnector,
   cc: ControllerComponents,
   createCaseConnector: CreateCaseConnector,

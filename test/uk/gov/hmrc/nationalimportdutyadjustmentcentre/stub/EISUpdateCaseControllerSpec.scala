@@ -29,7 +29,7 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import scala.concurrent.Future
 
-class EISCreateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
+class EISUpdateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
   val configuredRef: String = "CONFIGURED_REF"
 
   override lazy val app: Application = GuiceApplicationBuilder()
@@ -43,9 +43,9 @@ class EISCreateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuit
     withAuthorizedUser()
   }
 
-  "EIS stub create-case" should {
+  "EIS stub update-case" should {
 
-    val post = FakeRequest("POST", "/eis-stub/create-case")
+    val post = FakeRequest("POST", "/eis-stub/update-case")
 
     "return 200 with Json payload containing configured case reference number" in {
       val result: Future[Result] =

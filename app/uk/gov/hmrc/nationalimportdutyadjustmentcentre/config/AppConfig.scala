@@ -25,17 +25,20 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val authBaseUrl: String = servicesConfig.baseUrl("auth")
 
-  val eisBaseUrl: String = servicesConfig.baseUrl("eis.createcaseapi")
+  val eisBaseUrl: String = servicesConfig.baseUrl("eis")
 
   val eisCreateCaseApiPath: String =
     servicesConfig.getConfString("eis.createcaseapi.path", throwConfigNotFoundError("eis.createcaseapi.path"))
 
+  val eisUpdateCaseApiPath: String =
+    servicesConfig.getConfString("eis.updatecaseapi.path", throwConfigNotFoundError("eis.updatecaseapi.path"))
+
   val eisAuthorizationToken: String =
-    servicesConfig.getConfString("eis.createcaseapi.token", throwConfigNotFoundError("eis.createcaseapi.token"))
+    servicesConfig.getConfString("eis.token", throwConfigNotFoundError("eis.token"))
 
   val eisEnvironment: String = servicesConfig.getConfString(
-    "eis.createcaseapi.environment",
-    throwConfigNotFoundError("eis.createcaseapi.environment")
+    "eis.environment",
+    throwConfigNotFoundError("eis.environment")
   )
 
   val stubPegaCaseRef: () => String = () =>

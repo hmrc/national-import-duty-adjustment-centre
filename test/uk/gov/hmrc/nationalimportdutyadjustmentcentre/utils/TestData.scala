@@ -22,8 +22,11 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
 
 trait TestData {
 
-  val claimRequest: CreateEISClaimRequest =
+  val createClaimRequest: CreateEISClaimRequest =
     CreateEISClaimRequest(eisRequest = JsString("payload"), uploadedFiles = uploadedFiles("reference"))
+
+  val updateClaimRequest: UpdateEISClaimRequest =
+    UpdateEISClaimRequest(eisRequest = JsString("payload"), uploadedFiles = uploadedFiles("reference"))
 
   def uploadedFiles(upscanReferences: String*): Seq[UploadedFile] = upscanReferences.map(
     upscanReference =>
@@ -36,10 +39,16 @@ trait TestData {
       )
   )
 
-  val eisSuccessResponse: EISCreateCaseSuccess =
+  val eisCreateSuccessResponse: EISCreateCaseSuccess =
     EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
 
-  val eisFailResponse: EISCreateCaseError =
+  val eisCreateFailResponse: EISCreateCaseError =
     EISCreateCaseError("errorCode", "errorMessage", Some("correlationId"), Some("timestamp"))
+
+  val eisUpdateSuccessResponse: EISUpdateCaseSuccess =
+    EISUpdateCaseSuccess("case-id", "processing-date", "status", "status-text")
+
+  val eisUpdateFailResponse: EISUpdateCaseError =
+    EISUpdateCaseError("errorCode", "errorMessage", Some("correlationId"), Some("timestamp"))
 
 }
