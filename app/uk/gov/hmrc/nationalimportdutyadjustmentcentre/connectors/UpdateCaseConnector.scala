@@ -21,11 +21,15 @@ import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.logging.Authorization
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISUpdateCaseError, EISUpdateCaseResponse, EISUpdateCaseSuccess}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
+  EISUpdateCaseError,
+  EISUpdateCaseResponse,
+  EISUpdateCaseSuccess
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UpdateCaseConnector @Inject()(val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
+class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
     extends ReadSuccessOrFailure[EISUpdateCaseResponse, EISUpdateCaseSuccess, EISUpdateCaseError](
       EISUpdateCaseError.fromStatusAndMessage
     ) with PegaConnector {

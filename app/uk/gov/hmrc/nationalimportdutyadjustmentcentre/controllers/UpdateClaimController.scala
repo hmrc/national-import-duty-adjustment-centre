@@ -20,7 +20,11 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{MicroserviceAuthConnector, UpdateCaseConnector}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISUpdateCaseError, EISUpdateCaseSuccess}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{UpdateClaimResponse, UpdateClaimResult, UpdateEISClaimRequest}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
+  UpdateClaimResponse,
+  UpdateClaimResult,
+  UpdateEISClaimRequest
+}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -28,7 +32,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class UpdateClaimController @Inject()(
+class UpdateClaimController @Inject() (
   val authConnector: MicroserviceAuthConnector,
   cc: ControllerComponents,
   updateCaseConnector: UpdateCaseConnector,

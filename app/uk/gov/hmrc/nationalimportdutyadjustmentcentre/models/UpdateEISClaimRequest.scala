@@ -24,5 +24,3 @@ object UpdateEISClaimRequest {
 
   implicit val format: OFormat[UpdateEISClaimRequest] = Json.format[UpdateEISClaimRequest]
 }
-
-

@@ -36,10 +36,8 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   val eisAuthorizationToken: String =
     servicesConfig.getConfString("eis.token", throwConfigNotFoundError("eis.token"))
 
-  val eisEnvironment: String = servicesConfig.getConfString(
-    "eis.environment",
-    throwConfigNotFoundError("eis.environment")
-  )
+  val eisEnvironment: String =
+    servicesConfig.getConfString("eis.environment", throwConfigNotFoundError("eis.environment"))
 
   val stubPegaCaseRef: () => String = () =>
     config

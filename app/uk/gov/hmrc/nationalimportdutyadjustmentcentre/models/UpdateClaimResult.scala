@@ -23,5 +23,3 @@ case class UpdateClaimResult(caseReference: String, fileTransferResults: Seq[Fil
 object UpdateClaimResult {
   implicit val format: OFormat[UpdateClaimResult] = Json.format[UpdateClaimResult]
 }
-
-
