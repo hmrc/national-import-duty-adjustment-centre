@@ -16,26 +16,26 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.stub
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
-case class CreateSuccessResponse(
+case class UpdateSuccessResponse(
   CaseID: String,
   ProcessingDate: ZonedDateTime = ZonedDateTime.now(),
   Status: String = "OK",
-  StatusText: String = "Case created"
+  StatusText: String = "Case updated"
 )
 
-object CreateSuccessResponse {
+object UpdateSuccessResponse {
 
-  implicit val format: Format[CreateSuccessResponse] = {
+  implicit val format: Format[UpdateSuccessResponse] = {
     implicit val zonedDateTimeFormat: Format[ZonedDateTime] = Format(
       Reads(
         json =>
@@ -51,11 +51,11 @@ object CreateSuccessResponse {
 }
 
 @Singleton()
-class EISCreateCaseController @Inject() (appConfig: AppConfig, cc: ControllerComponents)(implicit ec: ExecutionContext)
+class EISUpdateCaseController @Inject() (appConfig: AppConfig, cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
   def post(): Action[JsValue] = Action.async(parse.json) { _ =>
-    Future(Ok(Json.toJson(CreateSuccessResponse(CaseID = appConfig.stubPegaCaseRef()))))
+    Future(Ok(Json.toJson(UpdateSuccessResponse(CaseID = appConfig.stubPegaCaseRef()))))
   }
 
 }

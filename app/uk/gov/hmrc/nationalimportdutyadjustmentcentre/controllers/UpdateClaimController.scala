@@ -16,54 +16,54 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseSuccess}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{MicroserviceAuthConnector, UpdateCaseConnector}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISUpdateCaseError, EISUpdateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
-  CreateClaimResponse,
-  CreateClaimResult,
-  CreateEISClaimRequest
+  UpdateClaimResponse,
+  UpdateClaimResult,
+  UpdateEISClaimRequest
 }
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
-class ClaimController @Inject() (
+class UpdateClaimController @Inject() (
   val authConnector: MicroserviceAuthConnector,
   cc: ControllerComponents,
-  createCaseConnector: CreateCaseConnector,
+  updateCaseConnector: UpdateCaseConnector,
   fileTransferService: FileTransferService
 )(implicit ec: ExecutionContext)
     extends BackendController(cc) with AuthActions with WithCorrelationId {
 
-  def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+  def update(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withAuthorised {
       withCorrelationId { correlationId: String =>
-        withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
-          createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
-            val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
-              case success: EISCreateCaseSuccess =>
-                fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
+        withJsonBody[UpdateEISClaimRequest] { updateClaimRequest: UpdateEISClaimRequest =>
+          updateCaseConnector.updateClaim(updateClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
+            val updateClaimResponse: Future[UpdateClaimResponse] = eisResponse match {
+              case success: EISUpdateCaseSuccess =>
+                fileTransferService.transferFiles(success.CaseID, correlationId, updateClaimRequest.uploadedFiles) map {
                   uploadResults =>
-                    CreateClaimResponse(
+                    UpdateClaimResponse(
                       correlationId = correlationId,
-                      result = Some(CreateClaimResult(success.CaseID, uploadResults))
+                      result = Some(UpdateClaimResult(success.CaseID, uploadResults))
                     )
                 }
-              case error: EISCreateCaseError =>
+              case error: EISUpdateCaseError =>
                 Future(
-                  CreateClaimResponse(
+                  UpdateClaimResponse(
                     correlationId = correlationId,
                     error = Some(ApiError(errorCode = error.ErrorCode, errorMessage = Some(error.ErrorMessage)))
                   )
                 )
             }
 
-            createClaimResponse map { response =>
+            updateClaimResponse map { response =>
               Ok(Json.toJson(response))
             }
 
