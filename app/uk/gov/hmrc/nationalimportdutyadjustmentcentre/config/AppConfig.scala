@@ -27,17 +27,13 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val eisBaseUrl: String = servicesConfig.baseUrl("eis")
 
-  val eisCreateCaseApiPath: String =
-    servicesConfig.getConfString("eis.createcaseapi.path", throwConfigNotFoundError("eis.createcaseapi.path"))
+  val eisCreateCaseApiPath: String = servicesConfig("eis.createcaseapi.path")
 
-  val eisUpdateCaseApiPath: String =
-    servicesConfig.getConfString("eis.updatecaseapi.path", throwConfigNotFoundError("eis.updatecaseapi.path"))
+  val eisUpdateCaseApiPath: String = servicesConfig("eis.updatecaseapi.path")
 
-  val eisAuthorizationToken: String =
-    servicesConfig.getConfString("eis.token", throwConfigNotFoundError("eis.token"))
+  val eisAuthorizationToken: String = servicesConfig("eis.token")
 
-  val eisEnvironment: String =
-    servicesConfig.getConfString("eis.environment", throwConfigNotFoundError("eis.environment"))
+  val eisEnvironment: String = servicesConfig("eis.environment")
 
   val stubPegaCaseRef: () => String = () =>
     config
@@ -46,16 +42,14 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val fileTransferBaseUrl: String = servicesConfig.baseUrl("trader-services.file-transfer")
 
-  val fileTransferPath: String =
-    servicesConfig.getConfString(
-      "trader-services.file-transfer.path",
-      throwConfigNotFoundError("trader-services.file-transfer.path")
-    )
+  val fileTransferPath: String = servicesConfig("trader-services.file-transfer.path")
 
   val auditingEnabled: Boolean = config.get[Boolean]("auditing.enabled")
 
   val graphiteHost: String =
     config.get[String]("microservice.metrics.graphite.host")
+
+  private def servicesConfig(key: String): String = servicesConfig.getConfString(key, throwConfigNotFoundError(key))
 
   private def throwConfigNotFoundError(key: String) =
     throw new RuntimeException(s"Could not find config key '$key'")
