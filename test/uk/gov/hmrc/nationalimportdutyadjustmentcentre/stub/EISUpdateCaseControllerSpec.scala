@@ -46,8 +46,8 @@ class EISUpdateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuit
 
   "EIS stub update-case" should {
 
-    val post = FakeRequest("POST", "/eis-stub/update-case")
-    val payloadWithCaseID: JsValue   = Json.parse("""{"Content": {"CaseID": "NID456345235436435"}}""")
+    val post                       = FakeRequest("POST", "/eis-stub/update-case")
+    val payloadWithCaseID: JsValue = Json.parse("""{"Content": {"CaseID": "NID456345235436435"}}""")
 
     "return 200 with Json payload containing submitted case reference number" in {
       val result: Future[Result] =
