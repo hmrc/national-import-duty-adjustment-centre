@@ -20,6 +20,7 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.libs.json.{JsString, JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -45,14 +46,23 @@ class EISUpdateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuit
 
   "EIS stub update-case" should {
 
-    val post = FakeRequest("POST", "/eis-stub/update-case")
+    val post                       = FakeRequest("POST", "/eis-stub/update-case")
+    val payloadWithCaseID: JsValue = Json.parse("""{"Content": {"CaseID": "NID456345235436435"}}""")
 
-    "return 200 with Json payload containing configured case reference number" in {
+    "return 200 with Json payload containing submitted case reference number" in {
       val result: Future[Result] =
-        route(app, post.withJsonBody(createClaimRequest.eisRequest)).get
+        route(app, post.withJsonBody(payloadWithCaseID)).get
 
       status(result) must be(OK)
-      (contentAsJson(result) \ "CaseID").as[String] must be(configuredRef)
+      (contentAsJson(result) \ "CaseID").as[String] must be("NID456345235436435")
+    }
+
+    "return 200 with Json payload as missing case number" in {
+      val result: Future[Result] =
+        route(app, post.withJsonBody(JsString("randomPayload"))).get
+
+      status(result) must be(OK)
+      (contentAsJson(result) \ "CaseID").as[String] must be("Missing Case ID In Request")
     }
   }
 }

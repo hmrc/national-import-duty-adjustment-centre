@@ -18,7 +18,6 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.stub
 
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import java.time.ZonedDateTime
@@ -51,11 +50,13 @@ object UpdateSuccessResponse {
 }
 
 @Singleton()
-class EISUpdateCaseController @Inject() (appConfig: AppConfig, cc: ControllerComponents)(implicit ec: ExecutionContext)
+class EISUpdateCaseController @Inject() (cc: ControllerComponents)(implicit ec: ExecutionContext)
     extends BackendController(cc) {
 
-  def post(): Action[JsValue] = Action.async(parse.json) { _ =>
-    Future(Ok(Json.toJson(UpdateSuccessResponse(CaseID = appConfig.stubPegaCaseRef()))))
+  def post(): Action[JsValue] = Action.async(parse.json) { implicit request =>
+    val caseId: String =
+      (request.body \ "Content" \ "CaseID").toOption.map(_.as[String]).getOrElse("Missing Case ID In Request")
+    Future(Ok(Json.toJson(UpdateSuccessResponse(CaseID = caseId))))
   }
 
 }
