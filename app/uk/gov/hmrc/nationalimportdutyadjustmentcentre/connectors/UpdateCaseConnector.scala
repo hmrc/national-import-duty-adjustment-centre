@@ -41,7 +41,7 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
       implicitly[Writes[JsValue]],
       readFromJsonSuccessOrFailure,
       HeaderCarrier(
-        authorization = Some(Authorization(s"Bearer ${config.eisAuthorizationToken}")),
+        authorization = Some(Authorization(s"Bearer ${config.eisUpdateCaseAuthorizationToken}")),
         requestId = hc.requestId
       )
         .withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*),
