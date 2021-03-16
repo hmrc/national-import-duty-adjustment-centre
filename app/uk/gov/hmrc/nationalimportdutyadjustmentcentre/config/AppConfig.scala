@@ -27,11 +27,11 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
 
   val eisBaseUrl: String = servicesConfig.baseUrl("eis")
 
-  val eisCreateCaseApiPath: String = servicesConfig("eis.createcaseapi.path")
+  val eisCreateCaseApiPath: String            = servicesConfig("eis.createcaseapi.path")
+  val eisCreateCaseAuthorizationToken: String = servicesConfig("eis.createcaseapi.token")
 
-  val eisUpdateCaseApiPath: String = servicesConfig("eis.updatecaseapi.path")
-
-  val eisAuthorizationToken: String = servicesConfig("eis.token")
+  val eisUpdateCaseApiPath: String            = servicesConfig("eis.updatecaseapi.path")
+  val eisUpdateCaseAuthorizationToken: String = servicesConfig("eis.updatecaseapi.token")
 
   val eisEnvironment: String = servicesConfig("eis.environment")
 
