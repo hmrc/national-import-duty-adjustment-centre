@@ -36,10 +36,12 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
 
   val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
-  def submitClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISCreateCaseResponse] = {
+  def submitClaim(request: JsValue, correlationId: String)(implicit
+    hc: HeaderCarrier
+  ): Future[EISCreateCaseResponse] = {
 
-    val eisHc: HeaderCarrier = hc.copy(
-      authorization = Some(Authorization(s"Bearer ${config.eisCreateCaseAuthorizationToken}")),
+    val eisHc: HeaderCarrier = hc.copy(authorization =
+      Some(Authorization(s"Bearer ${config.eisCreateCaseAuthorizationToken}"))
     ).withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*)
 
     http.POST[JsValue, EISCreateCaseResponse](url, request)(
