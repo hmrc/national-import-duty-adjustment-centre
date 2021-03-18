@@ -36,16 +36,18 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
 
   val url: String = config.eisBaseUrl + config.eisUpdateCaseApiPath
 
-  def updateClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISUpdateCaseResponse] =
+  def updateClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISUpdateCaseResponse] = {
+
+    val eisHc: HeaderCarrier = hc.copy(
+      authorization = Some(Authorization(s"Bearer ${config.eisUpdateCaseAuthorizationToken}")),
+    ).withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*)
+
     http.POST[JsValue, EISUpdateCaseResponse](url, request)(
       implicitly[Writes[JsValue]],
       readFromJsonSuccessOrFailure,
-      HeaderCarrier(
-        authorization = Some(Authorization(s"Bearer ${config.eisUpdateCaseAuthorizationToken}")),
-        requestId = hc.requestId
-      )
-        .withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*),
+      eisHc,
       implicitly[ExecutionContext]
     )
+  }
 
 }
