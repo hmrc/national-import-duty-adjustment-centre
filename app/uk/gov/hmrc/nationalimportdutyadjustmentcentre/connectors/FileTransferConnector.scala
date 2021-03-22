@@ -49,6 +49,8 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
         failResponse(fileTransferRequest.upscanReference, httpEx.responseCode, httpEx.message)
       case error: UpstreamErrorResponse =>
         failResponse(fileTransferRequest.upscanReference, error.statusCode, error.message)
+      case exception: Exception =>
+        failResponse(fileTransferRequest.upscanReference, 500, exception.getMessage)
     }
 
   private def failResponse(reference: String, errorCode: Int, errorMessage: String) = FileTransferResult(
