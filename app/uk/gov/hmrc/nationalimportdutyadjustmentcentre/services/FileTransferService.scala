@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
-import java.util.UUID
-
 import javax.inject.Inject
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
