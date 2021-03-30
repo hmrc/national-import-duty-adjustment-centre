@@ -46,18 +46,9 @@ class MicroserviceModule(val environment: Environment, val configuration: Config
 }
 
 @Singleton
-class CustomHttpAuditing @Inject() (val auditConnector: AuditConnector, @Named("appName") val appName: String)
-    extends HttpAuditing {
-
-  override val auditDisabledForPattern: Regex =
-    """none""".r
-
-}
-
-@Singleton
 class CustomHttpClient @Inject() (
   config: Configuration,
-  val httpAuditing: CustomHttpAuditing,
+  val httpAuditing: HttpAuditing,
   override val wsClient: WSClient,
   override protected val actorSystem: ActorSystem
 ) extends uk.gov.hmrc.http.HttpClient with WSHttp {
