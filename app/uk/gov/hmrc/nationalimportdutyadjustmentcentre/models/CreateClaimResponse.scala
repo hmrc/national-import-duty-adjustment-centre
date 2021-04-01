@@ -21,6 +21,7 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 
 case class CreateClaimResponse(
   correlationId: String,
+  processingDate: Option[String] = None,
   error: Option[ApiError] = None,
   result: Option[CreateClaimResult] = None
 )
