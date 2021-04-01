@@ -76,6 +76,7 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       contentAsJson(result) mustBe toJson(
         UpdateClaimResponse(
           correlationId = "xyz",
+          processingDate = Some("2021-12-03T10:15:30"),
           error = None,
           result = Some(UpdateClaimResult(eisUpdateSuccessResponse.CaseID, Seq.empty))
         )
@@ -110,6 +111,7 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       contentAsJson(result) mustBe toJson(
         UpdateClaimResponse(
           correlationId = "xyz",
+          processingDate = Some("2021-12-03T10:15:30"),
           error = None,
           result = Some(UpdateClaimResult(eisUpdateSuccessResponse.CaseID, fileTransferResults))
         )
@@ -128,6 +130,7 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         contentAsJson(result) mustBe toJson(
           UpdateClaimResponse(
             correlationId = "xyz",
+            processingDate = Some("2021-12-04T10:15:30"),
             error = Some(ApiError(eisUpdateFailResponse.ErrorCode, Some(eisUpdateFailResponse.ErrorMessage))),
             result = None
           )
