@@ -83,7 +83,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
-            processingDate = Some("2021-12-03T10:15:30"),
+            processingDate = Some(processingDate),
             error = None,
             result = Some(CreateClaimResult(eisCreateSuccessResponse.CaseID, Seq.empty))
           )
@@ -118,7 +118,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
-            processingDate = Some("2021-12-03T10:15:30"),
+            processingDate = Some(processingDate),
             error = None,
             result = Some(CreateClaimResult(eisCreateSuccessResponse.CaseID, fileTransferResults))
           )
@@ -140,7 +140,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         contentAsJson(result) mustBe toJson(
           CreateClaimResponse(
             correlationId = "xyz",
-            processingDate = Some("2021-12-04T10:15:30"),
+            processingDate = Some(processingDate),
             error = Some(ApiError(eisCreateFailResponse.ErrorCode, Some(eisCreateFailResponse.ErrorMessage))),
             result = None
           )

@@ -18,9 +18,11 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import play.api.libs.json._
 
+import java.time.LocalDateTime
+
 sealed trait EISUpdateCaseResponse
 
-case class EISUpdateCaseSuccess(CaseID: String, ProcessingDate: String, Status: String, StatusText: String)
+case class EISUpdateCaseSuccess(CaseID: String, ProcessingDate: LocalDateTime, Status: String, StatusText: String)
     extends EISUpdateCaseResponse
 
 object EISUpdateCaseSuccess {
@@ -34,7 +36,7 @@ case class EISUpdateCaseError(
   ErrorCode: String,
   ErrorMessage: String,
   CorrelationID: Option[String] = None,
-  ProcessingDate: Option[String] = None
+  ProcessingDate: Option[LocalDateTime] = None
 ) extends EISUpdateCaseResponse
 
 object EISUpdateCaseError {
