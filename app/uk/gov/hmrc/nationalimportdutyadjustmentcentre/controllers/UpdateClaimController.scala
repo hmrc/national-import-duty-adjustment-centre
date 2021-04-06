@@ -51,6 +51,7 @@ class UpdateClaimController @Inject() (
                   uploadResults =>
                     UpdateClaimResponse(
                       correlationId = correlationId,
+                      processingDate = Some(success.ProcessingDate),
                       result = Some(UpdateClaimResult(success.CaseID, uploadResults))
                     )
                 }
@@ -58,6 +59,7 @@ class UpdateClaimController @Inject() (
                 Future(
                   UpdateClaimResponse(
                     correlationId = correlationId,
+                    processingDate = error.ProcessingDate,
                     error = Some(ApiError(errorCode = error.ErrorCode, errorMessage = Some(error.ErrorMessage)))
                   )
                 )

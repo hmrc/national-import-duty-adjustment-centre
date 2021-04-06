@@ -19,8 +19,11 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 
+import java.time.LocalDateTime
+
 case class UpdateClaimResponse(
   correlationId: String,
+  processingDate: Option[LocalDateTime] = None,
   error: Option[ApiError] = None,
   result: Option[UpdateClaimResult] = None
 )

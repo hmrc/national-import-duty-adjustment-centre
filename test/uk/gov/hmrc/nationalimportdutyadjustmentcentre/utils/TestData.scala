@@ -20,6 +20,8 @@ import play.api.libs.json.JsString
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
 
+import java.time.LocalDateTime
+
 trait TestData {
 
   val createClaimRequest: CreateEISClaimRequest =
@@ -39,16 +41,18 @@ trait TestData {
       )
   )
 
+  val processingDate: LocalDateTime = LocalDateTime.of(2021, 4, 2, 9, 21);
+
   val eisCreateSuccessResponse: EISCreateCaseSuccess =
-    EISCreateCaseSuccess("case-id", "processing-date", "status", "status-text")
+    EISCreateCaseSuccess("case-id", processingDate, "status", "status-text")
 
   val eisCreateFailResponse: EISCreateCaseError =
-    EISCreateCaseError("errorCode", "errorMessage", Some("correlationId"), Some("timestamp"))
+    EISCreateCaseError("errorCode", "errorMessage", Some("correlationId"), Some(processingDate))
 
   val eisUpdateSuccessResponse: EISUpdateCaseSuccess =
-    EISUpdateCaseSuccess("case-id", "processing-date", "status", "status-text")
+    EISUpdateCaseSuccess("case-id", processingDate, "status", "status-text")
 
   val eisUpdateFailResponse: EISUpdateCaseError =
-    EISUpdateCaseError("errorCode", "errorMessage", Some("correlationId"), Some("timestamp"))
+    EISUpdateCaseError("errorCode", "errorMessage", Some("correlationId"), Some(processingDate))
 
 }
