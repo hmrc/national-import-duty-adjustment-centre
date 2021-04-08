@@ -40,6 +40,11 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
       url,
       request,
       eisApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
-    )(implicitly[Writes[JsValue]], readFromJsonSuccessOrFailure, hc, implicitly[ExecutionContext])
+    )(
+      implicitly[Writes[JsValue]],
+      readFromJsonSuccessOrFailure,
+      hc.copy(authorization = None),
+      implicitly[ExecutionContext]
+    )
 
 }
