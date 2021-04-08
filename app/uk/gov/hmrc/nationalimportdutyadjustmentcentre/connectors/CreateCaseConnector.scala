@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
     extends ReadSuccessOrFailure[EISCreateCaseResponse, EISCreateCaseSuccess, EISCreateCaseError](
       EISCreateCaseError.fromStatusAndMessage
-    ) with PegaConnector {
+    ) with EISConnector {
 
   val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
@@ -39,7 +39,7 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
     http.POST[JsValue, EISCreateCaseResponse](
       url,
       request,
-      pegaApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
+      eisApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
     )(implicitly[Writes[JsValue]], readFromJsonSuccessOrFailure, hc, implicitly[ExecutionContext])
 
 }

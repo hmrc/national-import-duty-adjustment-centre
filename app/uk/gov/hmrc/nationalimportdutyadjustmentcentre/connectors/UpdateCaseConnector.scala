@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
     extends ReadSuccessOrFailure[EISUpdateCaseResponse, EISUpdateCaseSuccess, EISUpdateCaseError](
       EISUpdateCaseError.fromStatusAndMessage
-    ) with PegaConnector {
+    ) with EISConnector {
 
   val url: String = config.eisBaseUrl + config.eisUpdateCaseApiPath
 
@@ -39,7 +39,7 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
     http.POST[JsValue, EISUpdateCaseResponse](
       url,
       request,
-      pegaApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
+      eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
     )(implicitly[Writes[JsValue]], readFromJsonSuccessOrFailure, hc, implicitly[ExecutionContext])
 
 }
