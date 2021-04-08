@@ -31,24 +31,20 @@ import scala.concurrent.{ExecutionContext, Future}
 class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
     extends ReadSuccessOrFailure[EISCreateCaseResponse, EISCreateCaseSuccess, EISCreateCaseError](
       EISCreateCaseError.fromStatusAndMessage
-    ) with PegaConnector {
+    ) with EISConnector {
 
   val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
-  def submitClaim(request: JsValue, correlationId: String)(implicit
-    hc: HeaderCarrier
-  ): Future[EISCreateCaseResponse] = {
-
-    val eisHc: HeaderCarrier = hc.copy(authorization =
-      Some(Authorization(s"Bearer ${config.eisCreateCaseAuthorizationToken}"))
-    ).withExtraHeaders(pegaApiHeaders(correlationId, config.eisEnvironment): _*)
-
-    http.POST[JsValue, EISCreateCaseResponse](url, request)(
+  def submitClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISCreateCaseResponse] =
+    http.POST[JsValue, EISCreateCaseResponse](
+      url,
+      request,
+      eisApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
+    )(
       implicitly[Writes[JsValue]],
       readFromJsonSuccessOrFailure,
-      eisHc,
+      hc.copy(authorization = None),
       implicitly[ExecutionContext]
     )
-  }
 
 }
