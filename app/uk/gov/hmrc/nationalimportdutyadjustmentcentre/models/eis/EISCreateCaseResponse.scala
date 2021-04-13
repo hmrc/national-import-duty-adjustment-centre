@@ -27,25 +27,18 @@ case class EISCreateCaseSuccess(CaseID: String, ProcessingDate: LocalDateTime, S
 
 object EISCreateCaseSuccess {
 
-  implicit val formats: Format[EISCreateCaseSuccess] =
-    Json.format[EISCreateCaseSuccess]
+  implicit val formats: OFormat[EISCreateCaseSuccess] = Json.format[EISCreateCaseSuccess]
 
 }
 
-case class EISCreateCaseError(
-  ErrorCode: String,
-  ErrorMessage: String,
-  CorrelationID: Option[String] = None,
-  ProcessingDate: Option[LocalDateTime] = None
-) extends EISCreateCaseResponse
+case class EISCreateCaseError(errorDetail: EISErrorDetail) extends EISCreateCaseResponse
 
 object EISCreateCaseError {
 
   def fromStatusAndMessage(status: Int, message: String): EISCreateCaseError =
-    EISCreateCaseError(status.toString, message)
+    EISCreateCaseError(EISErrorDetail(Some(s"STATUS${status.toString}"), Some(message)))
 
-  implicit val formats: Format[EISCreateCaseError] =
-    Json.format[EISCreateCaseError]
+  implicit val formats: OFormat[EISCreateCaseError] = Json.format[EISCreateCaseError]
 
 }
 

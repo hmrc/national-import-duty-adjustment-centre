@@ -32,17 +32,12 @@ object EISUpdateCaseSuccess {
 
 }
 
-case class EISUpdateCaseError(
-  ErrorCode: String,
-  ErrorMessage: String,
-  CorrelationID: Option[String] = None,
-  ProcessingDate: Option[LocalDateTime] = None
-) extends EISUpdateCaseResponse
+case class EISUpdateCaseError(errorDetail: EISErrorDetail) extends EISUpdateCaseResponse
 
 object EISUpdateCaseError {
 
   def fromStatusAndMessage(status: Int, message: String): EISUpdateCaseError =
-    EISUpdateCaseError(status.toString, message)
+    EISUpdateCaseError(EISErrorDetail(Some(s"STATUS${status.toString}"), Some(message)))
 
   implicit val formats: Format[EISUpdateCaseError] =
     Json.format[EISUpdateCaseError]

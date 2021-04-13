@@ -47,12 +47,16 @@ trait TestData {
     EISCreateCaseSuccess("case-id", processingDate, "status", "status-text")
 
   val eisCreateFailResponse: EISCreateCaseError =
-    EISCreateCaseError("errorCode", "errorMessage", Some("correlationId"), Some(processingDate))
+    EISCreateCaseError(
+      EISErrorDetail(Some("errorCode"), Some("create errorMessage"), Some("correlationId"), processingDate)
+    )
 
   val eisUpdateSuccessResponse: EISUpdateCaseSuccess =
     EISUpdateCaseSuccess("case-id", processingDate, "status", "status-text")
 
   val eisUpdateFailResponse: EISUpdateCaseError =
-    EISUpdateCaseError("errorCode", "errorMessage", Some("correlationId"), Some(processingDate))
+    EISUpdateCaseError(
+      EISErrorDetail(Some("errorCode"), Some("update errorMessage"), Some("correlationId"), processingDate)
+    )
 
 }

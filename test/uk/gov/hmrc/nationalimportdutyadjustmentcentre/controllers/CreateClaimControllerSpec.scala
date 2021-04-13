@@ -141,7 +141,9 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           CreateClaimResponse(
             correlationId = "xyz",
             processingDate = Some(processingDate),
-            error = Some(ApiError(eisCreateFailResponse.ErrorCode, Some(eisCreateFailResponse.ErrorMessage))),
+            error = Some(
+              ApiError(eisCreateFailResponse.errorDetail.errorCode, eisCreateFailResponse.errorDetail.errorMessage)
+            ),
             result = None
           )
         )

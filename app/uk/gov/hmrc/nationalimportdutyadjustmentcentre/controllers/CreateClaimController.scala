@@ -59,8 +59,10 @@ class CreateClaimController @Inject() (
                 Future(
                   CreateClaimResponse(
                     correlationId = correlationId,
-                    processingDate = error.ProcessingDate,
-                    error = Some(ApiError(errorCode = error.ErrorCode, errorMessage = Some(error.ErrorMessage)))
+                    processingDate = Some(error.errorDetail.processingDate),
+                    error = Some(
+                      ApiError(errorCode = error.errorDetail.errorCode, errorMessage = error.errorDetail.errorMessage)
+                    )
                   )
                 )
             }
