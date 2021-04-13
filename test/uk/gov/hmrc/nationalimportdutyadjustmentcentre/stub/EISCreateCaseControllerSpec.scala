@@ -55,4 +55,5 @@ class EISCreateCaseControllerSpec extends ControllerSpec with GuiceOneAppPerSuit
       (contentAsJson(result) \ "CaseID").as[String] must be(configuredRef)
     }
   }
+
 }
