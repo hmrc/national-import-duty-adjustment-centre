@@ -16,17 +16,25 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import java.time.Instant
 
-case class EISErrorDetail(
-  errorCode: Option[String] = None,
-  errorMessage: Option[String] = None,
-  correlationId: Option[String] = None,
-  processingDate: Instant = Instant.now()
-)
+class EISUpdateCaseErrorSpec extends UnitSpec with TestData {
 
-object EISErrorDetail {
-  implicit val formats: Format[EISErrorDetail] = Json.format[EISErrorDetail]
+  "EISUpdateCaseError" when {
+    "fromStatusAndMessage" should {
+      "return a valid ErrorCase and details" in {
+        val error = EISUpdateCaseError.fromStatusAndMessage(101, "This would be the message")
+
+        error.errorDetail mustBe a[EISErrorDetail]
+
+        error.errorDetail.errorMessage mustBe Some("This would be the message")
+        error.errorDetail.errorCode mustBe Some("STATUS101")
+        error.errorDetail.processingDate mustBe a[Instant]
+      }
+    }
+  }
+
 }
