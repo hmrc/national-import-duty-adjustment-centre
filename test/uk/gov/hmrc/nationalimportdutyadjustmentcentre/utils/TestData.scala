@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils
 
+import java.time.{Instant, LocalDateTime, ZoneOffset}
+
 import play.api.libs.json.JsString
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
-
-import java.time.LocalDateTime
 
 trait TestData {
 
@@ -41,7 +41,7 @@ trait TestData {
       )
   )
 
-  val processingDate: LocalDateTime = LocalDateTime.of(2021, 4, 2, 9, 21);
+  val processingDate: Instant = LocalDateTime.of(2021, 4, 2, 9, 21).toInstant(ZoneOffset.UTC);
 
   val eisCreateSuccessResponse: EISCreateCaseSuccess =
     EISCreateCaseSuccess("case-id", processingDate, "status", "status-text")

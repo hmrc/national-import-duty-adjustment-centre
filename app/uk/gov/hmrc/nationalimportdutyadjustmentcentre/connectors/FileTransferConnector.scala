@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 import javax.inject.Inject
 import uk.gov.hmrc.http._
@@ -41,7 +41,7 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
             fileTransferRequest.upscanReference,
             isSuccess(response),
             response.status,
-            LocalDateTime.now(),
+            Instant.now(),
             None
           )
       ) recover {
@@ -57,7 +57,7 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
     reference,
     success = false,
     httpStatus = errorCode,
-    transferredAt = LocalDateTime.now(),
+    transferredAt = Instant.now(),
     error = Some(errorMessage)
   )
 

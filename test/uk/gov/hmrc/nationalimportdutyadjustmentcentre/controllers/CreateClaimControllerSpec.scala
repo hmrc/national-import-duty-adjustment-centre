@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.{reset, verifyNoInteractions, when}
@@ -101,7 +101,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
             upscanReference = "upscanReference",
             success = true,
             httpStatus = 202,
-            transferredAt = ZonedDateTime.now.toLocalDateTime
+            transferredAt = Instant.now
           )
         )
 

@@ -34,7 +34,7 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
-import java.time.ZonedDateTime
+import java.time.Instant
 import scala.concurrent.Future
 
 class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
@@ -94,7 +94,7 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           upscanReference = "upscanReference",
           success = true,
           httpStatus = 202,
-          transferredAt = ZonedDateTime.now.toLocalDateTime
+          transferredAt = Instant.now
         )
       )
 

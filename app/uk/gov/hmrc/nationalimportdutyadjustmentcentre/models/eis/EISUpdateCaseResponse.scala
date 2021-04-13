@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json._
+import java.time.Instant
 
-import java.time.LocalDateTime
+import play.api.libs.json._
 
 sealed trait EISUpdateCaseResponse
 
-case class EISUpdateCaseSuccess(CaseID: String, ProcessingDate: LocalDateTime, Status: String, StatusText: String)
+case class EISUpdateCaseSuccess(CaseID: String, ProcessingDate: Instant, Status: String, StatusText: String)
     extends EISUpdateCaseResponse
 
 object EISUpdateCaseSuccess {
