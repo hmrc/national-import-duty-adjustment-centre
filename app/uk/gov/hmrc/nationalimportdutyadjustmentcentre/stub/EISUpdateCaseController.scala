@@ -16,18 +16,19 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.stub
 
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 case class UpdateSuccessResponse(
   CaseID: String,
-  ProcessingDate: ZonedDateTime = ZonedDateTime.now(),
+  ProcessingDate: Instant = Instant.now(),
   Status: String = "OK",
   StatusText: String = "Case updated"
 )
@@ -35,11 +36,11 @@ case class UpdateSuccessResponse(
 object UpdateSuccessResponse {
 
   implicit val format: Format[UpdateSuccessResponse] = {
-    implicit val zonedDateTimeFormat: Format[ZonedDateTime] = Format(
+    implicit val instantFormat: Format[Instant] = Format(
       Reads(
         json =>
           json.validate[String].flatMap { dateTime =>
-            JsSuccess(ZonedDateTime.parse(dateTime, DateTimeFormatter.ISO_ZONED_DATE_TIME))
+            JsSuccess(Instant.parse(dateTime))
           }
       ),
       Writes(dateTime => JsString(DateTimeFormatter.ISO_INSTANT.format(dateTime)))
