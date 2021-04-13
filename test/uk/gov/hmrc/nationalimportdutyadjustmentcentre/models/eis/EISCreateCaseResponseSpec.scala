@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json.{JsObject, JsSuccess}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsSuccess, Json}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
@@ -31,36 +30,58 @@ class EISCreateCaseResponseSpec extends UnitSpec with TestData {
         "return a valid EISCreateCaseSuccess" in {
           EISCreateCaseResponse.reads.reads(
             Json.parse(EISCreateCaseResponseSpec.successCreateResponse)
-          ) mustBe JsSuccess(
-            EISCreateCaseSuccess(
-              "11370e18-6e24-453e-b45a-76d3e32ea33d",
-              Instant.parse("2018-04-24T09:30:00Z"),
-              "Created200",
-              "Created Claim"
-            )
-          )
+          ) mustBe JsSuccess(EISCreateCaseResponseSpec.createCaseSuccess)
         }
       }
 
       "using a error response" should {
         "return a valid EISCreateCaseError" in {
           EISCreateCaseResponse.reads.reads(Json.parse(EISCreateCaseResponseSpec.errorCreateResponse)) mustBe JsSuccess(
-            EISCreateCaseError(
-              EISErrorDetail(
-                Some("PEGAERROR500"),
-                Some("Pega error message 500"),
-                Some("abcdefg-awe-errr-errr-errrooorrr"),
-                Instant.parse("2018-04-24T09:30:00Z")
-              )
-            )
+            EISCreateCaseResponseSpec.createCaseError
           )
         }
+      }
+    }
+  }
+
+  "writes" when {
+    "giving an createCaseSuccess" should {
+      "return a valid Json object" in {
+        EISCreateCaseResponse.writes.writes(EISCreateCaseResponseSpec.createCaseSuccess) mustBe Json.parse(
+          EISCreateCaseResponseSpec.successCreateResponse
+        )
+      }
+    }
+  }
+
+  "writes" when {
+    "giving an createCaseError" should {
+      "return a valid Json object" in {
+        EISCreateCaseResponse.writes.writes(EISCreateCaseResponseSpec.createCaseError) mustBe Json.parse(
+          EISCreateCaseResponseSpec.errorCreateResponse
+        )
       }
     }
   }
 }
 
 object EISCreateCaseResponseSpec {
+
+  val createCaseSuccess = EISCreateCaseSuccess(
+    "11370e18-6e24-453e-b45a-76d3e32ea33d",
+    Instant.parse("2018-04-24T09:30:00Z"),
+    "Created200",
+    "Created Claim"
+  )
+
+  val createCaseError = EISCreateCaseError(
+    EISErrorDetail(
+      Some("PEGAERROR500"),
+      Some("Pega error message 500"),
+      Some("abcdefg-awe-errr-errr-errrooorrr"),
+      Instant.parse("2018-04-24T09:30:00Z")
+    )
+  )
 
   val successCreateResponse: String =
     """

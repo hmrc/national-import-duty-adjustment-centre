@@ -30,36 +30,59 @@ class EISUpdateCaseResponseSpec extends UnitSpec with TestData {
         "return a valid EISUpdateCaseSuccess" in {
           EISUpdateCaseResponse.reads.reads(
             Json.parse(EISUpdateCaseResponseSpec.successUpdateResponse)
-          ) mustBe JsSuccess(
-            EISUpdateCaseSuccess(
-              "eeeeef-6e24-453e-b45a-76d3e32ea33d",
-              Instant.parse("2018-04-24T09:30:00Z"),
-              "Updated200",
-              "Updated Claim"
-            )
-          )
+          ) mustBe JsSuccess(EISUpdateCaseResponseSpec.updateCaseSuccess)
         }
       }
 
       "using a error response" should {
         "return a valid EISUpdateCaseError" in {
           EISUpdateCaseResponse.reads.reads(Json.parse(EISUpdateCaseResponseSpec.errorUpdateResponse)) mustBe JsSuccess(
-            EISUpdateCaseError(
-              EISErrorDetail(
-                Some("PEGAERROR500"),
-                Some("Pega error message 500"),
-                Some("abcdefg-awe-errr-errr-errrooorrr"),
-                Instant.parse("2018-04-24T09:30:00Z")
-              )
-            )
+            EISUpdateCaseResponseSpec.updateCaseError
           )
         }
       }
     }
   }
+
+  "writes" when {
+    "giving an updateCaseSuccess" should {
+      "return a valid Json object" in {
+        EISUpdateCaseResponse.writes.writes(EISUpdateCaseResponseSpec.updateCaseSuccess) mustBe Json.parse(
+          EISUpdateCaseResponseSpec.successUpdateResponse
+        )
+      }
+    }
+  }
+
+  "writes" when {
+    "giving an updateCaseError" should {
+      "return a valid Json object" in {
+        EISUpdateCaseResponse.writes.writes(EISUpdateCaseResponseSpec.updateCaseError) mustBe Json.parse(
+          EISUpdateCaseResponseSpec.errorUpdateResponse
+        )
+      }
+    }
+  }
+
 }
 
 object EISUpdateCaseResponseSpec {
+
+  val updateCaseSuccess = EISUpdateCaseSuccess(
+    "eeeeef-6e24-453e-b45a-76d3e32ea33d",
+    Instant.parse("2018-04-24T09:30:00Z"),
+    "Updated200",
+    "Updated Claim"
+  )
+
+  val updateCaseError = EISUpdateCaseError(
+    EISErrorDetail(
+      Some("PEGAERROR500"),
+      Some("Pega error message 500"),
+      Some("abcdefg-awe-errr-errr-errrooorrr"),
+      Instant.parse("2018-04-24T09:30:00Z")
+    )
+  )
 
   val successUpdateResponse: String =
     """
