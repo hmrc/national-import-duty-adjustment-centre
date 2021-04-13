@@ -1,3 +1,4 @@
+import sbt.Tests.{Group, SubProcess}
 import uk.gov.hmrc.DefaultBuildSettings.integrationTestSettings
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 
@@ -24,11 +25,22 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(publishingSettings: _*)
   .configs(IntegrationTest)
-  .settings(integrationTestSettings(): _*)
+  .settings(
+    Keys.fork in IntegrationTest := false,
+    Defaults.itSettings,
+    unmanagedSourceDirectories in IntegrationTest += baseDirectory(_ / "it").value,
+    parallelExecution in IntegrationTest := false,
+    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
+    majorVersion := 0
+  )
   .settings(resolvers += Resolver.jcenterRepo)
   .settings(scoverageSettings)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
 
+def oneForkedJvmPerTest(tests: Seq[TestDefinition]) =
+  tests.map { test =>
+    new Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
+  }
 
 lazy val scoverageSettings: Seq[Setting[_]] = Seq(
   coverageExcludedPackages := List(
