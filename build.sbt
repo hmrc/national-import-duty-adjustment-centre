@@ -51,7 +51,7 @@ lazy val scoverageSettings: Seq[Setting[_]] = Seq(
     ".*(Routes|AppConfig|CustomHttp*).*",
     "logger.*\\(.*\\)"
   ).mkString(";"),
-  coverageMinimum := 80,
+  coverageMinimum := 95,
   coverageFailOnMinimum := true,
   coverageHighlighting := true,
   parallelExecution in Test := false

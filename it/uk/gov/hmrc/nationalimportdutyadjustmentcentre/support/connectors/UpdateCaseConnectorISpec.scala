@@ -54,7 +54,7 @@ class UpdateCaseConnectorISpec extends UpdateCaseConnectorISpecSetup {
             errorCode = Some("Some ErrorCode 999"),
             errorMessage = Some("It update case error"),
             correlationId = Some("it-correlation-id"),
-            processingDate = fixedInstant
+            timestamp = fixedInstant
           )
         )
       }

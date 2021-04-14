@@ -38,7 +38,7 @@ trait CreateCaseStubs {
   private val errorResponseJson =
     s"""{
        |    "errorDetail": {
-       |      "processingDate": "$fixedInstant",
+       |      "timestamp": "$fixedInstant",
        |      "correlationId": "it-correlation-id",
        |      "errorCode": "Some ErrorCode 999",
        |      "errorMessage": "It update case error"
