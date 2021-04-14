@@ -18,8 +18,15 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import play.api.libs.json.{Format, Json}
 
-case class ApiError(errorCode: Option[String], errorMessage: Option[String] = None)
+import java.time.Instant
 
-object ApiError {
-  implicit val formats: Format[ApiError] = Json.format[ApiError]
+case class EISErrorDetail(
+  errorCode: Option[String] = None,
+  errorMessage: Option[String] = None,
+  correlationId: Option[String] = None,
+  processingDate: Instant = Instant.now()
+)
+
+object EISErrorDetail {
+  implicit val formats: Format[EISErrorDetail] = Json.format[EISErrorDetail]
 }

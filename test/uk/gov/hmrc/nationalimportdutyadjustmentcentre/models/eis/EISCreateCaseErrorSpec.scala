@@ -16,10 +16,22 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
-case class ApiError(errorCode: Option[String], errorMessage: Option[String] = None)
+class EISCreateCaseErrorSpec extends UnitSpec with TestData {
 
-object ApiError {
-  implicit val formats: Format[ApiError] = Json.format[ApiError]
+  "EISCreateCaseError" when {
+    "fromStatusAndMessage" should {
+      "return a valid ErrorCase and details" in {
+        val error = EISCreateCaseError.fromStatusAndMessage(101, "This would be the message")
+
+        error.errorDetail mustBe a[EISErrorDetail]
+
+        error.errorDetail.errorMessage mustBe Some("This would be the message")
+        error.errorDetail.errorCode mustBe Some("STATUS101")
+      }
+    }
+  }
+
 }
