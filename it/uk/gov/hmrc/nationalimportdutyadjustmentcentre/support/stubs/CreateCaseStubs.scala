@@ -20,17 +20,17 @@ import com.github.tomakehurst.wiremock.client.WireMock._
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
-trait UpdateCaseStubs {
+trait CreateCaseStubs {
   me: WireMockSupport =>
 
-  val UPDATE_CASE_URL = "/eis-stub/update-case"
+  val UPDATE_CASE_URL = "/eis-stub/create-case"
 
   val caseId = "NID21134557697RM8WIB13"
 
   private val successResponseJson =
     s"""{
        |    "Status": "Success",
-       |    "StatusText": "Case updated successfully",
+       |    "StatusText": "Case created successfully",
        |    "CaseID": "$caseId",
        |    "ProcessingDate": "$fixedInstant"
        |}""".stripMargin
@@ -45,13 +45,13 @@ trait UpdateCaseStubs {
        |    }
        |}""".stripMargin
 
-  def givenUpdateCaseResponseWithSuccessMessage(responseBody: String = successResponseJson): Unit =
+  def givenCreateCaseResponseWithSuccessMessage(responseBody: String = successResponseJson): Unit =
     stubForPostWithResponse(200, responseBody)
 
-  def givenUpdateCaseResponseWithErrorMessage(status: Int, responseBody: String = errorResponseJson): Unit =
+  def givenCreateCaseResponseWithErrorMessage(status: Int, responseBody: String = errorResponseJson): Unit =
     stubForPostWithResponse(status, responseBody)
 
-  def givenUpdateCaseResponseWithNoBody(status: Int): Unit = stubFor(
+  def givenCreateCaseResponseWithNoBody(status: Int): Unit = stubFor(
     post(urlEqualTo(UPDATE_CASE_URL))
       .willReturn(
         aResponse()
@@ -60,7 +60,7 @@ trait UpdateCaseStubs {
       )
   )
 
-  def givenUpdateCaseResponseWithNoContentType(status: Int): Unit = stubFor(
+  def givenCreateCaseResponseWithNoContentType(status: Int): Unit = stubFor(
     post(urlEqualTo(UPDATE_CASE_URL))
       .willReturn(
         aResponse()
@@ -69,7 +69,7 @@ trait UpdateCaseStubs {
       )
   )
 
-  def givenUpdateCaseResponseWithContentType(contentType: String): Unit =
+  def givenCreateCaseResponseWithContentType(contentType: String): Unit =
     stubForPostWithResponse(200, successResponseJson, contentType)
 
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
