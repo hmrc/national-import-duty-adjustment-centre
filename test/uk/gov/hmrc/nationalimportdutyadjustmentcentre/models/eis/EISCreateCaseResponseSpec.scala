@@ -97,7 +97,7 @@ object EISCreateCaseResponseSpec {
     """
       |{
       |    "errorDetail" : {
-      |        "processingDate": "2018-04-24T09:30:00Z",
+      |        "timestamp": "2018-04-24T09:30:00Z",
       |        "correlationId" : "abcdefg-awe-errr-errr-errrooorrr",
       |        "errorCode" : "PEGAERROR500",
       |        "errorMessage": "Pega error message 500"

@@ -32,7 +32,7 @@ class EISUpdateCaseErrorSpec extends UnitSpec with TestData {
 
         error.errorDetail.errorMessage mustBe Some("This would be the message")
         error.errorDetail.errorCode mustBe Some("STATUS101")
-        error.errorDetail.processingDate mustBe a[Instant]
+        error.errorDetail.timestamp mustBe a[Instant]
       }
     }
   }
