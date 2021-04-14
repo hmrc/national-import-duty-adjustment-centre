@@ -24,7 +24,7 @@ case class EISErrorDetail(
   errorCode: Option[String] = None,
   errorMessage: Option[String] = None,
   correlationId: Option[String] = None,
-  processingDate: Instant = Instant.now()
+  timestamp: Instant = Instant.now()
 )
 
 object EISErrorDetail {
