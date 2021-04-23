@@ -21,7 +21,11 @@ import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, UpstreamErrorResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseSuccess, EISErrorDetail, EISUpdateCaseError, EISUpdateCaseSuccess}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
+  EISCreateCaseError,
+  EISCreateCaseSuccess,
+  EISErrorDetail
+}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.AppBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.CreateCaseStubs
 
