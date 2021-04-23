@@ -17,7 +17,6 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.config
 
 import akka.actor.ActorSystem
-import com.google.inject.name.Named
 import com.google.inject.{AbstractModule, Inject, Singleton}
 import com.typesafe.config.Config
 import play.api.libs.ws.WSClient
@@ -27,10 +26,7 @@ import uk.gov.hmrc.http._
 import uk.gov.hmrc.http.hooks.HttpHook
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.play.audit.http.HttpAuditing
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.http.ws.WSHttp
-
-import scala.util.matching.Regex
 
 class MicroserviceModule(val environment: Environment, val configuration: Configuration) extends AbstractModule {
 
