@@ -33,7 +33,6 @@ lazy val microservice = Project(appName, file("."))
     testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
     majorVersion := 0
   )
-  .settings(resolvers += Resolver.jcenterRepo)
   .settings(scoverageSettings)
   .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
 
