@@ -21,15 +21,19 @@ import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar
+import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
-import uk.gov.hmrc.auth.core.{AuthProviders, MissingBearerToken}
 import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
+import uk.gov.hmrc.auth.core.{AuthProviders, Enrolments, MissingBearerToken}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ControllerSpec extends UnitSpec with Injector with MockitoSugar with BeforeAndAfterEach {
+trait ControllerSpec extends UnitSpec with Injector with MockitoSugar with TestData with BeforeAndAfterEach {
 
   SharedMetricRegistries.clear()
 
@@ -40,24 +44,30 @@ trait ControllerSpec extends UnitSpec with Injector with MockitoSugar with Befor
 
   def withAuthorizedUser(): Unit =
     when(
-      mockAuthConnector.authorise(meq(AuthProviders(GovernmentGateway)), meq(EmptyRetrieval))(
+      mockAuthConnector.authorise(meq(AuthProviders(GovernmentGateway) and Organisation), meq(EmptyRetrieval))(
         any[HeaderCarrier],
         any[ExecutionContext]
       )
     ).thenReturn(Future.successful(()))
+
+  def withAuthEnrolments(enrolments: Enrolments): Unit =
+    when(mockAuthConnector.authorise(any(), meq(allEnrolments))(any[HeaderCarrier], any[ExecutionContext])).thenReturn(
+      Future.successful(enrolments)
+    )
 
   def withUnauthorizedUser(): Unit =
     when(mockAuthConnector.authorise(any(), any())(any(), any())).thenReturn(Future.failed(MissingBearerToken()))
 
-  override protected def beforeEach(): Unit = {
+  val mockAppConfig: AppConfig = mock[AppConfig]
+
+  def withAppConfigAllowEoriNumber(eori: String, allow: Boolean = true): Unit =
+    when(mockAppConfig.allowEori(eori)).thenReturn(allow)
+
+  def withAppConfigEoriEnrolments(enrolments: Seq[String]): Unit =
+    when(mockAppConfig.eoriEnrolments).thenReturn(enrolments)
+
+  override protected def beforeEach(): Unit =
     super.beforeEach()
-    when(
-      mockAuthConnector.authorise(meq(AuthProviders(GovernmentGateway)), meq(EmptyRetrieval))(
-        any[HeaderCarrier],
-        any[ExecutionContext]
-      )
-    ).thenReturn(Future.successful(()))
-  }
 
   override protected def afterEach(): Unit = {
     reset(mockAuthConnector)

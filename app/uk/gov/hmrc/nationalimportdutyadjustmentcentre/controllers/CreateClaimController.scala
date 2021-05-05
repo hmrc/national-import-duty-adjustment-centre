@@ -19,6 +19,7 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
@@ -37,40 +38,46 @@ class CreateClaimController @Inject() (
   cc: ControllerComponents,
   createCaseConnector: CreateCaseConnector,
   fileTransferService: FileTransferService
-)(implicit ec: ExecutionContext)
-    extends BackendController(cc) with AuthActions with WithCorrelationId {
+)(implicit ec: ExecutionContext, appConfig: AppConfig)
+    extends BackendController(cc) with AuthActions with WithEORINumber with WithCorrelationId {
 
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withAuthorised {
-      withCorrelationId { correlationId: String =>
-        withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
-          createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
-            val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
-              case success: EISCreateCaseSuccess =>
-                fileTransferService.transferFiles(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
-                  uploadResults =>
+      withEORINumber { eoriNumber =>
+        withCorrelationId { correlationId: String =>
+          withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
+            createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
+              val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
+                case success: EISCreateCaseSuccess =>
+                  fileTransferService.transferFiles(
+                    success.CaseID,
+                    correlationId,
+                    createClaimRequest.uploadedFiles
+                  ) map {
+                    uploadResults =>
+                      CreateClaimResponse(
+                        correlationId = correlationId,
+                        processingDate = Some(success.ProcessingDate),
+                        result = Some(CreateClaimResult(success.CaseID, uploadResults))
+                      )
+                  }
+                case error: EISCreateCaseError =>
+                  Future(
                     CreateClaimResponse(
                       correlationId = correlationId,
-                      processingDate = Some(success.ProcessingDate),
-                      result = Some(CreateClaimResult(success.CaseID, uploadResults))
-                    )
-                }
-              case error: EISCreateCaseError =>
-                Future(
-                  CreateClaimResponse(
-                    correlationId = correlationId,
-                    processingDate = Some(error.errorDetail.timestamp),
-                    error = Some(
-                      ApiError(errorCode = error.errorDetail.errorCode, errorMessage = error.errorDetail.errorMessage)
+                      processingDate = Some(error.errorDetail.timestamp),
+                      error = Some(
+                        ApiError(errorCode = error.errorDetail.errorCode, errorMessage = error.errorDetail.errorMessage)
+                      )
                     )
                   )
-                )
-            }
+              }
 
-            createClaimResponse map { response =>
-              Ok(Json.toJson(response))
-            }
+              createClaimResponse map { response =>
+                Ok(Json.toJson(response))
+              }
 
+            }
           }
         }
       }

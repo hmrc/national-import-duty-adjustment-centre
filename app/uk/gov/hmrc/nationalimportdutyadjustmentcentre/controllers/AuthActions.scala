@@ -17,6 +17,7 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
 import play.api.mvc.Result
+import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,6 +29,6 @@ trait AuthActions extends AuthorisedFunctions {
   protected def withAuthorised[A](
     body: => Future[Result]
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    authorised(AuthProviders(GovernmentGateway))(body)
+    authorised(AuthProviders(GovernmentGateway) and Organisation)(body)
 
 }

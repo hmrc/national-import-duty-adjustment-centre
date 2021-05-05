@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
+import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{MicroserviceAuthConnector, UpdateCaseConnector}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISUpdateCaseError, EISUpdateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
@@ -28,7 +30,6 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
-import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
@@ -37,42 +38,48 @@ class UpdateClaimController @Inject() (
   cc: ControllerComponents,
   updateCaseConnector: UpdateCaseConnector,
   fileTransferService: FileTransferService
-)(implicit ec: ExecutionContext)
-    extends BackendController(cc) with AuthActions with WithCorrelationId {
+)(implicit ec: ExecutionContext, appConfig: AppConfig)
+    extends BackendController(cc) with AuthActions with WithEORINumber with WithCorrelationId {
 
   def update(): Action[JsValue] = Action.async(parse.json) { implicit request =>
     withAuthorised {
-      withCorrelationId { correlationId: String =>
-        withJsonBody[UpdateEISClaimRequest] { updateClaimRequest: UpdateEISClaimRequest =>
-          updateCaseConnector.updateClaim(updateClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
-            val updateClaimResponse: Future[UpdateClaimResponse] = eisResponse match {
-              case success: EISUpdateCaseSuccess =>
-                fileTransferService.transferFiles(success.CaseID, correlationId, updateClaimRequest.uploadedFiles) map {
-                  uploadResults =>
+      withEORINumber { eoriNumber =>
+        withCorrelationId { correlationId: String =>
+          withJsonBody[UpdateEISClaimRequest] { updateClaimRequest: UpdateEISClaimRequest =>
+            updateCaseConnector.updateClaim(updateClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
+              val updateClaimResponse: Future[UpdateClaimResponse] = eisResponse match {
+                case success: EISUpdateCaseSuccess =>
+                  fileTransferService.transferFiles(
+                    success.CaseID,
+                    correlationId,
+                    updateClaimRequest.uploadedFiles
+                  ) map {
+                    uploadResults =>
+                      UpdateClaimResponse(
+                        correlationId = correlationId,
+                        processingDate = Some(success.ProcessingDate),
+                        result = Some(UpdateClaimResult(success.CaseID, uploadResults))
+                      )
+                  }
+                case error: EISUpdateCaseError =>
+                  Future(
                     UpdateClaimResponse(
                       correlationId = correlationId,
-                      processingDate = Some(success.ProcessingDate),
-                      result = Some(UpdateClaimResult(success.CaseID, uploadResults))
-                    )
-                }
-              case error: EISUpdateCaseError =>
-                Future(
-                  UpdateClaimResponse(
-                    correlationId = correlationId,
-                    processingDate = Some(error.errorDetail.timestamp),
-                    error = Some(
-                      ApiError(errorCode = error.errorDetail.errorCode, errorMessage = error.errorDetail.errorMessage)
+                      processingDate = Some(error.errorDetail.timestamp),
+                      error = Some(
+                        ApiError(errorCode = error.errorDetail.errorCode, errorMessage = error.errorDetail.errorMessage)
+                      )
                     )
                   )
-                )
-            }
+              }
 
-            updateClaimResponse map { response =>
-              Ok(Json.toJson(response))
+              updateClaimResponse map { response =>
+                Ok(Json.toJson(response))
+              }
+
             }
 
           }
-
         }
       }
     }
