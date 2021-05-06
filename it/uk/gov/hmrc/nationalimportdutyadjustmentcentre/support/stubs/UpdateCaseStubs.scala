@@ -45,14 +45,6 @@ trait UpdateCaseStubs {
        |    }
        |}""".stripMargin
 
-  val errorResponseNoCodeJson =
-    s"""{
-       |    "errorDetail": {
-       |      "timestamp": "$fixedInstant",
-       |      "correlationId": "it-correlation-id"
-       |    }
-       |}""".stripMargin
-
   def givenUpdateCaseResponseWithSuccessMessage(responseBody: String = successResponseJson): Unit =
     stubForPostWithResponse(200, responseBody)
 
