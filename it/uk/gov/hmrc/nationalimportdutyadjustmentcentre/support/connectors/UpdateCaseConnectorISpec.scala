@@ -81,6 +81,18 @@ class UpdateCaseConnectorISpec extends UpdateCaseConnectorISpecSetup {
         error.errorDetail.errorMessage mustBe Some("Error: missing content-type header")
       }
 
+      "return EISUpdateCaseError if response is plain text" in {
+
+        givenUpdateCaseResponseWithStatusContentTypeAndBody(510, MimeTypes.TEXT, "There was a problem")
+
+        val result = await(connector.updateClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISUpdateCaseError]
+        error.errorDetail.errorCode mustBe Some("STATUS510")
+        error.errorDetail.errorMessage.get must include("There was a problem")
+
+      }
+
       "throw exception if http status is unexpected" in {
 
         givenUpdateCaseResponseWithErrorMessage(300)
@@ -93,7 +105,7 @@ class UpdateCaseConnectorISpec extends UpdateCaseConnectorISpecSetup {
 
       "throw exception if content-Type is unexpected" in {
 
-        givenUpdateCaseResponseWithContentType(MimeTypes.XML)
+        givenUpdateCaseResponseWithStatusContentTypeAndBody(contentType = MimeTypes.XML)
 
         intercept[UpstreamErrorResponse] {
           await(connector.updateClaim(testRequest, correlationId))

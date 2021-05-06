@@ -69,8 +69,8 @@ trait UpdateCaseStubs {
       )
   )
 
-  def givenUpdateCaseResponseWithContentType(contentType: String): Unit =
-    stubForPostWithResponse(200, successResponseJson, contentType)
+  def givenUpdateCaseResponseWithStatusContentTypeAndBody(status: Int = 200, contentType: String, body: String = successResponseJson): Unit =
+    stubForPostWithResponse(status, body, contentType)
 
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
     stubFor(

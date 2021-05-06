@@ -62,6 +62,8 @@ abstract class ReadSuccessOrFailure[A, S <: A: Reads, F <: A: Reads](fallback: (
               else
                 throw UpstreamErrorResponse(s"Unexpected response status $status", 500)
 
+            case Some(MimeTypes.TEXT) => HttpReads.pure(fallback(status, response.body))
+
             case other =>
               throw UpstreamErrorResponse(
                 s"Unexpected response type of status $status, expected application/json but got ${other
