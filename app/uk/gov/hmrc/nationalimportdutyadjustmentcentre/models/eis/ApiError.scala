@@ -24,6 +24,6 @@ object ApiError {
   implicit val formats: Format[ApiError] = Json.format[ApiError]
 
   def apply(errorCode: Option[String], errorMessage: Option[String]): ApiError =
-    new ApiError(errorCode.getOrElse("UNKNOWN"), errorMessage)
+    new ApiError(errorCode.getOrElse("NONE-SUPPLIED"), errorMessage)
 
 }

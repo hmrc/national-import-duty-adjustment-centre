@@ -152,7 +152,7 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           UpdateClaimResponse(
             correlationId = "xyz",
             processingDate = Some(processingDate),
-            error = Some(ApiError("UNKNOWN")),
+            error = Some(ApiError("NONE-SUPPLIED")),
             result = None
           )
         )
