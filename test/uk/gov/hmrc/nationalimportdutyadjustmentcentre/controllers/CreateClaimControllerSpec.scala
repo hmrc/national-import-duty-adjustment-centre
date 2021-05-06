@@ -154,6 +154,24 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         )
       }
 
+      "minimum EIS response is returned" in {
+        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
+          Future.successful(eisCreateFailMinimumResponse)
+        )
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+
+        status(result) must be(OK)
+        contentAsJson(result) mustBe toJson(
+          CreateClaimResponse(
+            correlationId = "xyz",
+            processingDate = Some(processingDate),
+            error = Some(ApiError("UNKNOWN")),
+            result = None
+          )
+        )
+      }
+
     }
 
     "handle an invalid request" when {

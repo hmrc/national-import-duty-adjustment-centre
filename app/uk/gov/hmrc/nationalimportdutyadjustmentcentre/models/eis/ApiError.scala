@@ -18,8 +18,12 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import play.api.libs.json.{Format, Json}
 
-case class ApiError(errorCode: Option[String], errorMessage: Option[String] = None)
+case class ApiError(errorCode: String, errorMessage: Option[String] = None)
 
 object ApiError {
   implicit val formats: Format[ApiError] = Json.format[ApiError]
+
+  def apply(errorCode: Option[String], errorMessage: Option[String]): ApiError =
+    new ApiError(errorCode.getOrElse("UNKNOWN"), errorMessage)
+
 }

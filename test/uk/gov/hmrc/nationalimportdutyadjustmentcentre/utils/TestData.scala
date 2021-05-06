@@ -58,6 +58,9 @@ trait TestData {
       EISErrorDetail(Some("errorCode"), Some("create errorMessage"), Some("correlationId"), processingDate)
     )
 
+  val eisCreateFailMinimumResponse: EISCreateCaseError =
+    EISCreateCaseError(EISErrorDetail(None, None, Some("correlationId"), processingDate))
+
   val eisUpdateSuccessResponse: EISUpdateCaseSuccess =
     EISUpdateCaseSuccess("case-id", processingDate, "status", "status-text")
 
@@ -65,5 +68,8 @@ trait TestData {
     EISUpdateCaseError(
       EISErrorDetail(Some("errorCode"), Some("update errorMessage"), Some("correlationId"), processingDate)
     )
+
+  val eisUpdateFailMinimumResponse: EISUpdateCaseError =
+    EISUpdateCaseError(EISErrorDetail(None, None, Some("correlationId"), processingDate))
 
 }
