@@ -21,6 +21,7 @@ import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
+  EISErrorDetail,
   EISUpdateCaseError,
   EISUpdateCaseResponse,
   EISUpdateCaseSuccess
@@ -45,6 +46,11 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
       readFromJsonSuccessOrFailure,
       hc.copy(authorization = None),
       implicitly[ExecutionContext]
-    )
+    ) recover {
+      case error: UpstreamErrorResponse =>
+        EISUpdateCaseError(
+          EISErrorDetail(errorCode = Some(s"ERROR${error.statusCode}"), errorMessage = Some(error.message))
+        )
+    }
 
 }

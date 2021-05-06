@@ -81,23 +81,39 @@ class UpdateCaseConnectorISpec extends UpdateCaseConnectorISpecSetup {
         error.errorDetail.errorMessage mustBe Some("Error: missing content-type header")
       }
 
-      "throw exception if http status is unexpected" in {
+      "return EISUpdateCaseError if http status is unexpected" in {
 
         givenUpdateCaseResponseWithErrorMessage(300)
 
-        intercept[UpstreamErrorResponse] {
-          await(connector.updateClaim(testRequest, correlationId))
-        }.getMessage mustBe "Unexpected response status 300"
+        val result = await(connector.updateClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISUpdateCaseError]
+        error.errorDetail.errorCode mustBe Some("ERROR500")
+        error.errorDetail.errorMessage mustBe Some("Unexpected response status 300")
 
       }
 
-      "throw exception if content-Type is unexpected" in {
+      "return EISUpdateCaseError if content-Type is unexpected" in {
 
         givenUpdateCaseResponseWithContentType(MimeTypes.XML)
 
-        intercept[UpstreamErrorResponse] {
-          await(connector.updateClaim(testRequest, correlationId))
-        }.getMessage must include (s"expected application/json but got ${MimeTypes.XML}")
+        val result = await(connector.updateClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISUpdateCaseError]
+        error.errorDetail.errorCode mustBe Some("ERROR500")
+        error.errorDetail.errorMessage.get must include(s"expected application/json but got ${MimeTypes.XML}")
+
+      }
+
+      "return EISUpdateCaseError if response is plain text" in {
+
+        givenUpdateCaseResponsePlainTextError(501, "There was a problem")
+
+        val result = await(connector.updateClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISUpdateCaseError]
+        error.errorDetail.errorCode mustBe Some("ERROR500")
+        error.errorDetail.errorMessage.get must include("There was a problem")
 
       }
 

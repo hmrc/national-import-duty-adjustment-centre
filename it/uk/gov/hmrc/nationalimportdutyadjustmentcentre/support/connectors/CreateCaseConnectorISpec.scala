@@ -21,11 +21,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, UpstreamErrorResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  EISCreateCaseError,
-  EISCreateCaseSuccess,
-  EISErrorDetail
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseSuccess, EISErrorDetail, EISUpdateCaseError}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.AppBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.CreateCaseStubs
 
@@ -33,7 +29,7 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
 
   "CreateCaseConnector" when {
     "updateClaim" should {
-      "return EISUpdateCaseSuccess if successful" in {
+      "return EISCreateCaseSuccess if successful" in {
 
         givenCreateCaseResponseWithSuccessMessage()
 
@@ -47,7 +43,7 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
         )
       }
 
-      "return EISUpdateCaseError if unsuccessful" in {
+      "return EISCreateCaseError if unsuccessful" in {
 
         givenCreateCaseResponseWithErrorMessage(400)
 
@@ -63,7 +59,7 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
         )
       }
 
-      "return EISUpdateCaseError if no body in response" in {
+      "return EISCreateCaseError if no body in response" in {
 
         givenCreateCaseResponseWithNoBody(504)
 
@@ -74,7 +70,7 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
         error.errorDetail.errorMessage mustBe Some("Error: empty response")
       }
 
-      "return EISUpdateCaseError if no content type in response" in {
+      "return EISCreateCaseError if no content type in response" in {
 
         givenCreateCaseResponseWithNoContentType(505)
 
@@ -85,23 +81,39 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
         error.errorDetail.errorMessage mustBe Some("Error: missing content-type header")
       }
 
-      "throw exception if http status is unexpected" in {
+      "return EISCreateCaseError if http status is unexpected" in {
 
         givenCreateCaseResponseWithErrorMessage(300)
 
-        intercept[UpstreamErrorResponse] {
-          await(connector.submitClaim(testRequest, correlationId))
-        }.getMessage mustBe "Unexpected response status 300"
+        val result = await(connector.submitClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISCreateCaseError]
+        error.errorDetail.errorCode mustBe Some("ERROR500")
+        error.errorDetail.errorMessage mustBe Some("Unexpected response status 300")
 
       }
 
-      "throw exception if content-Type is unexpected" in {
+      "return EISCreateCaseError if content-Type is unexpected" in {
 
         givenCreateCaseResponseWithContentType(MimeTypes.XML)
 
-        intercept[UpstreamErrorResponse] {
-          await(connector.submitClaim(testRequest, correlationId))
-        }.getMessage must include(s"expected application/json but got ${MimeTypes.XML}")
+        val result = await(connector.submitClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISCreateCaseError]
+        error.errorDetail.errorCode mustBe Some("ERROR500")
+        error.errorDetail.errorMessage.get must include(s"expected application/json but got ${MimeTypes.XML}")
+
+      }
+
+      "return EISCreateCaseError if response is plain text" in {
+
+        givenCreateCaseResponsePlainTextError(501, "There was a problem")
+
+        val result = await(connector.submitClaim(testRequest, correlationId))
+
+        val error = result.asInstanceOf[EISCreateCaseError]
+        error.errorDetail.errorCode mustBe Some("ERROR500")
+        error.errorDetail.errorMessage.get must include("There was a problem")
 
       }
 

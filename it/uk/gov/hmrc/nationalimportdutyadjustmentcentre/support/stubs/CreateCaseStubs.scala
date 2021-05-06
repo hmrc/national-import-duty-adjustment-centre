@@ -72,6 +72,9 @@ trait CreateCaseStubs {
   def givenCreateCaseResponseWithContentType(contentType: String): Unit =
     stubForPostWithResponse(200, successResponseJson, contentType)
 
+  def givenCreateCaseResponsePlainTextError(status: Int = 500, body: String = "plain error message"): Unit =
+    stubForPostWithResponse(status, body, MimeTypes.TEXT)
+
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
     stubFor(
       post(urlEqualTo(UPDATE_CASE_URL))

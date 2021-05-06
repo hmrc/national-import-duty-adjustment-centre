@@ -20,6 +20,7 @@ import play.api.libs.json.{JsError, JsSuccess, Reads}
 import play.mvc.Http.{HeaderNames, MimeTypes}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.{HttpReads, HttpResponse, JsValidationException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.UnsupportedMediaTypeException
 
 import scala.util.Try
 

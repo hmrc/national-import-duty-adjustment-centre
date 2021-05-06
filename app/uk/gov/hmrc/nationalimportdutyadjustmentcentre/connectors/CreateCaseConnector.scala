@@ -23,7 +23,8 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
   EISCreateCaseError,
   EISCreateCaseResponse,
-  EISCreateCaseSuccess
+  EISCreateCaseSuccess,
+  EISErrorDetail
 }
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -45,6 +46,11 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(
       readFromJsonSuccessOrFailure,
       hc.copy(authorization = None),
       implicitly[ExecutionContext]
-    )
+    ) recover {
+      case error: UpstreamErrorResponse =>
+        EISCreateCaseError(
+          EISErrorDetail(errorCode = Some(s"ERROR${error.statusCode}"), errorMessage = Some(error.message))
+        )
+    }
 
 }
