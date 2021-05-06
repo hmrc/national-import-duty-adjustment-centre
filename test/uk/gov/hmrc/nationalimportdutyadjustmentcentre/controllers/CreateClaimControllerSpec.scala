@@ -24,12 +24,14 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
-import play.api.libs.json.{JsValue, Json}
 import play.api.libs.json.Json.toJson
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
@@ -38,11 +40,10 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   FileTransferResult
 }
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import scala.concurrent.Future
 
-class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
+class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
 
   private val mockCreateCaseConnector = mock[CreateCaseConnector]
   private val mockFileTransferService = mock[FileTransferService]
@@ -51,13 +52,17 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
     .overrides(
       bind[MicroserviceAuthConnector].to(mockAuthConnector),
       bind[CreateCaseConnector].to(mockCreateCaseConnector),
-      bind[FileTransferService].to(mockFileTransferService)
+      bind[FileTransferService].to(mockFileTransferService),
+      bind[AppConfig].to(mockAppConfig)
     )
     .build()
 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     withAuthorizedUser()
+    withAuthEnrolments(validEnrolments())
+    withAppConfigAllowEoriNumber(validEORI)
+    withAppConfigEoriEnrolments(Seq("HMRC-CTS-ORG"))
   }
 
   override protected def afterEach(): Unit = {
@@ -160,6 +165,38 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         verifyNoInteractions(mockCreateCaseConnector)
       }
 
+    }
+
+    "is unauthorised" when {
+      "does not have any enrolments" in {
+        withAuthEnrolments(Enrolments(Set.empty))
+
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+
+        status(result) must be(UNAUTHORIZED)
+        verifyNoInteractions(mockCreateCaseConnector)
+      }
+
+      "does not have correct enrolment" in {
+        withAppConfigEoriEnrolments(Seq("HMRC-NEW-ORG"))
+
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+
+        status(result) must be(UNAUTHORIZED)
+        verifyNoInteractions(mockCreateCaseConnector)
+      }
+
+      "does not have allowed EORI number" in {
+        withAppConfigAllowEoriNumber(validEORI, false)
+
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+
+        status(result) must be(UNAUTHORIZED)
+        verifyNoInteractions(mockCreateCaseConnector)
+      }
     }
   }
 }

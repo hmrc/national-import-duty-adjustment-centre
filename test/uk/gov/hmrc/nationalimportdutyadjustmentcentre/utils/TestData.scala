@@ -19,10 +19,17 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import play.api.libs.json.JsString
+import uk.gov.hmrc.auth.core.{Enrolment, EnrolmentIdentifier, Enrolments}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis._
 
 trait TestData {
+
+  val validEORI = "GB1234567890"
+
+  def validEnrolments(eoriNumber: String = validEORI): Enrolments = Enrolments(
+    Set(Enrolment("HMRC-CTS-ORG", List(EnrolmentIdentifier("EORINumber", eoriNumber)), "Activated", None))
+  )
 
   val createClaimRequest: CreateEISClaimRequest =
     CreateEISClaimRequest(eisRequest = JsString("payload"), uploadedFiles = uploadedFiles("reference"))

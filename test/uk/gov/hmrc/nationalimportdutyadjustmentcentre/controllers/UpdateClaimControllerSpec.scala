@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
+import java.time.Instant
+
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.{reset, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -29,12 +31,11 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{MicroserviceAuthConnector, UpdateCaseConnector}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
-import java.time.Instant
 import scala.concurrent.Future
 
 class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
@@ -53,6 +54,7 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
   override protected def beforeEach(): Unit = {
     super.beforeEach()
     withAuthorizedUser()
+    withAuthEnrolments(validEnrolments())
   }
 
   override protected def afterEach(): Unit = {
