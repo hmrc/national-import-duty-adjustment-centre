@@ -17,7 +17,7 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
 import play.api.libs.json.{JsNumber, JsString, Json}
-import play.api.mvc.{Request, Result, _}
+import play.api.mvc.{Result, _}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
 import uk.gov.hmrc.http.HeaderCarrier
@@ -35,7 +35,7 @@ trait WithEORINumber extends AuthorisedFunctions { self: Results =>
 
   protected def withEORINumber(
     f: String => Future[Result]
-  )(implicit hc: HeaderCarrier, ec: ExecutionContext, request: Request[_], appConfig: AppConfig): Future[Result] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext, appConfig: AppConfig): Future[Result] =
     authorised().retrieve(allEnrolments) { enrolments =>
       val eoriFromEnrolments: Option[String] =
         enrolments

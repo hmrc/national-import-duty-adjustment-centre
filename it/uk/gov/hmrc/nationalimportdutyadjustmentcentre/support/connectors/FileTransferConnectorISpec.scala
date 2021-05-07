@@ -43,7 +43,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
         verifyTraderServicesFileTransferHasHappened(times = 1)
       }
 
-      "return failure success if 403" in {
+      "return failure for non-2xx response" in {
 
         givenTraderServicesFileTransferWithStatus(403)
 
@@ -53,22 +53,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
         result.upscanReference mustBe request.upscanReference
         result.success mustBe false
         result.httpStatus mustBe 403
-        result.error.isDefined mustBe true
-
-        verifyTraderServicesFileTransferHasHappened(times = 1)
-      }
-
-      "return failure success if 500" in {
-
-        givenTraderServicesFileTransferWithStatus(500)
-
-        val request = testRequest(UUID.randomUUID().toString)
-        val result  = await(connector.transferFile(request))
-
-        result.upscanReference mustBe request.upscanReference
-        result.success mustBe false
-        result.httpStatus mustBe 500
-        result.error.isDefined mustBe true
+        result.error mustBe None
 
         verifyTraderServicesFileTransferHasHappened(times = 1)
       }

@@ -82,26 +82,6 @@ class FileTransferConnectorSpec extends UnitSpec with ScalaFutures with BeforeAn
       transferResults.httpStatus must be(301)
     }
 
-    "handle HttpException" in {
-      httpOnPost.thenAnswer((_) => Future.failed(new HttpException("HttpException Message", 400)))
-
-      val transferResults: FileTransferResult = connector.transferFile(request).futureValue
-
-      transferResults.success must be(false)
-      transferResults.httpStatus must be(400)
-      transferResults.error must be(Some("HttpException Message"))
-    }
-
-    "handle UpstreamErrorResponse" in {
-      httpOnPost.thenAnswer((_) => Future.failed(UpstreamErrorResponse("Upstream Message", 500)))
-
-      val transferResults: FileTransferResult = connector.transferFile(request).futureValue
-
-      transferResults.success must be(false)
-      transferResults.httpStatus must be(500)
-      transferResults.error must be(Some("Upstream Message"))
-    }
-
     "handle any other exception" in {
       httpOnPost.thenAnswer((_) => Future.failed(new Exception("Something went wrong")))
 
