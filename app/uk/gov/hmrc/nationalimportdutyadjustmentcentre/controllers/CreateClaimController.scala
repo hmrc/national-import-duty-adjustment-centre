@@ -20,14 +20,14 @@ import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   CreateClaimResponse,
   CreateClaimResult,
   CreateEISClaimRequest
 }
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{CreateCaseService, FileTransferService}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CreateClaimController @Inject() (
   val authConnector: MicroserviceAuthConnector,
   cc: ControllerComponents,
-  createCaseConnector: CreateCaseConnector,
+  createCaseService: CreateCaseService,
   fileTransferService: FileTransferService
 )(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends BackendController(cc) with AuthActions with WithEORINumber with WithCorrelationId {
@@ -46,36 +46,40 @@ class CreateClaimController @Inject() (
       withEORINumber { eoriNumber =>
         withCorrelationId { correlationId: String =>
           withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
-            createCaseConnector.submitClaim(createClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
-              val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
-                case success: EISCreateCaseSuccess =>
-                  fileTransferService.transferFiles(
-                    success.CaseID,
-                    correlationId,
-                    createClaimRequest.uploadedFiles
-                  ) map {
-                    uploadResults =>
+            createCaseService.submitClaim(eoriNumber, createClaimRequest.eisRequest, correlationId) flatMap {
+              eisResponse =>
+                val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
+                  case success: EISCreateCaseSuccess =>
+                    fileTransferService.transferFiles(
+                      success.CaseID,
+                      correlationId,
+                      createClaimRequest.uploadedFiles
+                    ) map {
+                      uploadResults =>
+                        CreateClaimResponse(
+                          correlationId = correlationId,
+                          processingDate = Some(success.ProcessingDate),
+                          result = Some(CreateClaimResult(success.CaseID, uploadResults))
+                        )
+                    }
+                  case error: EISCreateCaseError =>
+                    Future(
                       CreateClaimResponse(
                         correlationId = correlationId,
-                        processingDate = Some(success.ProcessingDate),
-                        result = Some(CreateClaimResult(success.CaseID, uploadResults))
-                      )
-                  }
-                case error: EISCreateCaseError =>
-                  Future(
-                    CreateClaimResponse(
-                      correlationId = correlationId,
-                      processingDate = Some(error.errorDetail.timestamp),
-                      error = Some(
-                        ApiError(errorCode = error.errorDetail.errorCode, errorMessage = error.errorDetail.errorMessage)
+                        processingDate = Some(error.errorDetail.timestamp),
+                        error = Some(
+                          ApiError(
+                            errorCode = error.errorDetail.errorCode,
+                            errorMessage = error.errorDetail.errorMessage
+                          )
+                        )
                       )
                     )
-                  )
-              }
+                }
 
-              createClaimResponse map { response =>
-                Ok(Json.toJson(response))
-              }
+                createClaimResponse map { response =>
+                  Ok(Json.toJson(response))
+                }
 
             }
           }

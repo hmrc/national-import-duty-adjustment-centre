@@ -32,26 +32,26 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.Enrolments
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{CreateCaseConnector, MicroserviceAuthConnector}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   CreateClaimResponse,
   CreateClaimResult,
   FileTransferResult
 }
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{CreateCaseService, FileTransferService}
 
 import scala.concurrent.Future
 
 class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
 
-  private val mockCreateCaseConnector = mock[CreateCaseConnector]
+  private val mockCreateCaseService   = mock[CreateCaseService]
   private val mockFileTransferService = mock[FileTransferService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(
       bind[MicroserviceAuthConnector].to(mockAuthConnector),
-      bind[CreateCaseConnector].to(mockCreateCaseConnector),
+      bind[CreateCaseService].to(mockCreateCaseService),
       bind[FileTransferService].to(mockFileTransferService),
       bind[AppConfig].to(mockAppConfig)
     )
@@ -66,7 +66,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
   }
 
   override protected def afterEach(): Unit = {
-    reset(mockCreateCaseConnector)
+    reset(mockCreateCaseService)
     super.afterEach()
   }
 
@@ -77,7 +77,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
     "handle a successful request" when {
 
       "create-case request succeeds with no files to upload" in {
-        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
+        when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisCreateSuccessResponse)
         )
         when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(Future.successful(Seq.empty))
@@ -96,7 +96,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       }
 
       "create-case request succeeds and file uploads succeed" in {
-        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
+        when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisCreateSuccessResponse)
         )
 
@@ -135,7 +135,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
     "handle an unsuccessful request" when {
 
       "request fails" in {
-        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
+        when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisCreateFailResponse)
         )
         val result: Future[Result] =
@@ -155,7 +155,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       }
 
       "minimum EIS response is returned" in {
-        when(mockCreateCaseConnector.submitClaim(any[JsValue], anyString())(any())).thenReturn(
+        when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisCreateFailMinimumResponse)
         )
         val result: Future[Result] =
@@ -180,7 +180,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         val result: Future[Result] = route(app, post.withJsonBody(Json.obj("field" -> "value"))).get
 
         status(result) must be(BAD_REQUEST)
-        verifyNoInteractions(mockCreateCaseConnector)
+        verifyNoInteractions(mockCreateCaseService)
       }
 
     }
@@ -193,7 +193,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
         status(result) must be(UNAUTHORIZED)
-        verifyNoInteractions(mockCreateCaseConnector)
+        verifyNoInteractions(mockCreateCaseService)
       }
 
       "does not have correct enrolment" in {
@@ -203,7 +203,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
         status(result) must be(UNAUTHORIZED)
-        verifyNoInteractions(mockCreateCaseConnector)
+        verifyNoInteractions(mockCreateCaseService)
       }
 
       "does not have allowed EORI number" in {
@@ -213,7 +213,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
         status(result) must be(UNAUTHORIZED)
-        verifyNoInteractions(mockCreateCaseConnector)
+        verifyNoInteractions(mockCreateCaseService)
       }
     }
   }
