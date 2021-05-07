@@ -18,7 +18,7 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
 import javax.inject.Inject
 import play.api.libs.json.{JsString, JsValue}
-import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException}
+import uk.gov.hmrc.http.{ForbiddenException, HeaderCarrier}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.EISCreateCaseResponse
 
@@ -34,14 +34,15 @@ class CreateCaseService @Inject() (createCaseConnector: CreateCaseConnector)(imp
 
     val eoriOk = (request \ "Content" \ "RepresentationType").toOption match {
       case Some(JsString("Importer")) => eoriMatch((request \ "Content" \ "ImporterDetails" \ "EORI").toOption)
-      case Some(_)                    => eoriMatch((request \ "Content" \ "AgentDetails" \ "EORI").toOption)
-      case None                       => false
+      case Some(JsString("Representative of importer")) =>
+        eoriMatch((request \ "Content" \ "AgentDetails" \ "EORI").toOption)
+      case _ => false
     }
 
     if (eoriOk)
       createCaseConnector.submitClaim(request, correlationId)
     else
-      throw new UnauthorizedException("Bad user")
+      throw new ForbiddenException("Bad user")
   }
 
 }

@@ -22,7 +22,7 @@ import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar.mock
 import play.api.test.Helpers.{await, defaultAwaitTimeout}
-import uk.gov.hmrc.http.{HeaderCarrier, UnauthorizedException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{ForbiddenException, HeaderCarrier}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
@@ -56,7 +56,7 @@ class CreateCaseServiceSpec extends UnitSpec with ScalaFutures with BeforeAndAft
         val createCaseResponse =
           service.submitClaim(importerEORI, createClaimImporterPayload(importerEORI), "correlationId").futureValue
 
-        createCaseResponse mustBeeisCreateSuccessResponse
+        createCaseResponse mustBe eisCreateSuccessResponse
       }
 
       "valid agent claim request is submitted" in {
@@ -64,21 +64,21 @@ class CreateCaseServiceSpec extends UnitSpec with ScalaFutures with BeforeAndAft
         val createCaseResponse =
           service.submitClaim(agentEORI, createClaimAgentPayload(importerEORI, agentEORI), "correlationId").futureValue
 
-        createCaseResponse mustBeeisCreateSuccessResponse
+        createCaseResponse mustBe eisCreateSuccessResponse
       }
     }
 
     "return unauthorised" when {
       "importer claim is submitted with incorrect EORI" in {
 
-        intercept[UnauthorizedException] {
+        intercept[ForbiddenException] {
           await(service.submitClaim(agentEORI, createClaimImporterPayload(importerEORI), "correlationId"))
         }.getMessage mustBe "Bad user"
       }
 
       "agent claim is submitted with incorrect EORI" in {
 
-        intercept[UnauthorizedException] {
+        intercept[ForbiddenException] {
           await(service.submitClaim(importerEORI, createClaimAgentPayload(importerEORI, agentEORI), "correlationId"))
         }.getMessage mustBe "Bad user"
       }
