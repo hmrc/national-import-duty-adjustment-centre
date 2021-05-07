@@ -140,6 +140,23 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           )
         )
       }
+      "minimum EIS response is returned" in {
+        when(mockUpdateCaseConnector.updateClaim(any[JsValue], anyString())(any())).thenReturn(
+          Future.successful(eisUpdateFailMinimumResponse)
+        )
+        val result: Future[Result] =
+          route(app, updatePost.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(updateClaimRequest))).get
+
+        status(result) must be(OK)
+        contentAsJson(result) mustBe toJson(
+          UpdateClaimResponse(
+            correlationId = "xyz",
+            processingDate = Some(processingDate),
+            error = Some(ApiError("NONE-SUPPLIED")),
+            result = None
+          )
+        )
+      }
     }
 
     "handle an invalid request" when {
