@@ -17,10 +17,9 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
 import play.api.libs.json.{JsNumber, JsString, Json}
-import play.api.mvc.{Request, Result}
-import play.api.mvc._
+import play.api.mvc.{Request, Result, _}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait WithCorrelationId { self: Results =>
 
@@ -31,9 +30,7 @@ trait WithCorrelationId { self: Results =>
     )
   )
 
-  protected def withCorrelationId(
-    f: String => Future[Result]
-  )(implicit ec: ExecutionContext, request: Request[_]): Future[Result] =
+  protected def withCorrelationId(f: String => Future[Result])(implicit request: Request[_]): Future[Result] =
     request.headers.get("x-correlation-id") match {
       case Some(value) => f(value)
       case None        => Future.successful(missingXCorrelationIdResponse)

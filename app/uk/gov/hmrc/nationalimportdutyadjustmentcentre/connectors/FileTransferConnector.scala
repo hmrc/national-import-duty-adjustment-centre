@@ -19,6 +19,7 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 import java.time.Instant
 
 import javax.inject.Inject
+import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.FileTransferResult
@@ -45,10 +46,6 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
             None
           )
       ) recover {
-      case httpEx: HttpException =>
-        failResponse(fileTransferRequest.upscanReference, httpEx.responseCode, httpEx.message)
-      case error: UpstreamErrorResponse =>
-        failResponse(fileTransferRequest.upscanReference, error.statusCode, error.message)
       case exception: Exception =>
         failResponse(fileTransferRequest.upscanReference, 500, exception.getMessage)
     }

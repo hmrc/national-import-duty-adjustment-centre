@@ -22,9 +22,9 @@ import uk.gov.hmrc.http.{ForbiddenException, HeaderCarrier}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.EISCreateCaseResponse
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class CreateCaseService @Inject() (createCaseConnector: CreateCaseConnector)(implicit ec: ExecutionContext) {
+class CreateCaseService @Inject() (createCaseConnector: CreateCaseConnector) {
 
   def submitClaim(eoriNumber: String, request: JsValue, correlationId: String)(implicit
     hc: HeaderCarrier
