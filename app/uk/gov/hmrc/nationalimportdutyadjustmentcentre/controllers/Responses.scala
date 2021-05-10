@@ -29,7 +29,7 @@ object Responses {
     )
   )
 
-  val invalidEORINumberResponse: Result = Unauthorized(
+  val invalidUserResponse: Result = Unauthorized(
     Json.obj("statusCode" -> JsNumber(Unauthorized.header.status), "message" -> JsString("Invalid user"))
   )
 

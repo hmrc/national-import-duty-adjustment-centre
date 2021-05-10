@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core.retrieve.EmptyRetrieval
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
-import uk.gov.hmrc.auth.core.{AuthProviders, Enrolments, MissingBearerToken}
+import uk.gov.hmrc.auth.core.{AuthProviders, Enrolments, MissingBearerToken, UnsupportedAffinityGroup}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
@@ -57,6 +57,9 @@ trait ControllerSpec extends UnitSpec with Injector with MockitoSugar with TestD
 
   def withUnauthorizedUser(): Unit =
     when(mockAuthConnector.authorise(any(), any())(any(), any())).thenReturn(Future.failed(MissingBearerToken()))
+
+  def withIndividualUser(): Unit =
+    when(mockAuthConnector.authorise(any(), any())(any(), any())).thenReturn(Future.failed(UnsupportedAffinityGroup()))
 
   val mockAppConfig: AppConfig = mock[AppConfig]
 

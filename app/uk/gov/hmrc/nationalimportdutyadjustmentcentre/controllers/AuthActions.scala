@@ -21,6 +21,7 @@ import uk.gov.hmrc.auth.core.AffinityGroup.Organisation
 import uk.gov.hmrc.auth.core.AuthProvider.GovernmentGateway
 import uk.gov.hmrc.auth.core._
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.invalidUserResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,6 +30,8 @@ trait AuthActions extends AuthorisedFunctions {
   protected def withAuthorised[A](
     body: => Future[Result]
   )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Result] =
-    authorised(AuthProviders(GovernmentGateway) and Organisation)(body)
+    authorised(AuthProviders(GovernmentGateway) and Organisation)(body) recover {
+      case _: AuthorisationException => invalidUserResponse
+    }
 
 }

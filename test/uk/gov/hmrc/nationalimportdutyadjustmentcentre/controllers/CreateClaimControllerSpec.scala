@@ -26,7 +26,7 @@ import play.api.inject.bind
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.Result
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.Enrolments
@@ -214,36 +214,38 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
     "is unauthorised" when {
       "does not have any enrolments" in {
         withAuthEnrolments(Enrolments(Set.empty))
-
-        val result: Future[Result] =
-          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
-
-        status(result) must be(UNAUTHORIZED)
-        contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
-        verifyNoInteractions(mockCreateCaseService)
+        userIsUnauthorised(post)
       }
 
       "does not have correct enrolment" in {
         withAppConfigEoriEnrolments(Seq("HMRC-NEW-ORG"))
-
-        val result: Future[Result] =
-          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
-
-        status(result) must be(UNAUTHORIZED)
-        contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
-        verifyNoInteractions(mockCreateCaseService)
+        userIsUnauthorised(post)
       }
 
       "does not have allowed EORI number" in {
         withAppConfigAllowEoriNumber(validEORI, false)
+        userIsUnauthorised(post)
+      }
 
-        val result: Future[Result] =
-          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+      "user has no bearer token" in {
+        withUnauthorizedUser()
+        userIsUnauthorised(post)
+      }
 
-        status(result) must be(UNAUTHORIZED)
-        contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
-        verifyNoInteractions(mockCreateCaseService)
+      "user is an individual" in {
+        withIndividualUser()
+        userIsUnauthorised(post)
       }
     }
   }
+
+  private def userIsUnauthorised(post: FakeRequest[AnyContentAsEmpty.type]) = {
+    val result: Future[Result] =
+      route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+
+    status(result) must be(UNAUTHORIZED)
+    contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
+    verifyNoInteractions(mockCreateCaseService)
+  }
+
 }

@@ -21,7 +21,7 @@ import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.invalidEORINumberResponse
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.invalidUserResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,7 +40,7 @@ trait WithEORINumber extends AuthorisedFunctions { self: Results =>
 
       eoriFromEnrolments match {
         case Some(eori) if appConfig.allowEori(eori) => f(eori)
-        case _                                       => Future.successful(invalidEORINumberResponse)
+        case _                                       => Future.successful(invalidUserResponse)
       }
     }
 
