@@ -16,19 +16,12 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import play.api.libs.json.{JsNumber, JsString, Json}
 import play.api.mvc.{Request, Result, _}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.missingXCorrelationIdResponse
 
 import scala.concurrent.Future
 
 trait WithCorrelationId { self: Results =>
-
-  private val missingXCorrelationIdResponse = BadRequest(
-    Json.obj(
-      "statusCode" -> JsNumber(BadRequest.header.status),
-      "message"    -> JsString("Missing header x-correlation-id")
-    )
-  )
 
   protected def withCorrelationId(f: String => Future[Result])(implicit request: Request[_]): Future[Result] =
     request.headers.get("x-correlation-id") match {

@@ -16,22 +16,18 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import play.api.libs.json.{JsNumber, JsString, Json}
 import play.api.mvc.{Result, _}
 import uk.gov.hmrc.auth.core.AuthorisedFunctions
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.allEnrolments
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.invalidEORINumberResponse
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait WithEORINumber extends AuthorisedFunctions { self: Results =>
 
   private val eoriIdentifier = "EORINumber"
-
-  private val invalidEORINumberResponse = Unauthorized(
-    Json.obj("statusCode" -> JsNumber(Unauthorized.header.status), "message" -> JsString("Invalid user"))
-  )
 
   protected def withEORINumber(
     f: String => Future[Result]

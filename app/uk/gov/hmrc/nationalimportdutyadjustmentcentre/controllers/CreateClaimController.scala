@@ -19,8 +19,10 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
+import uk.gov.hmrc.http.ForbiddenException
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.forbiddenResponse
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   CreateClaimResponse,
@@ -81,6 +83,8 @@ class CreateClaimController @Inject() (
                   Ok(Json.toJson(response))
                 }
 
+            } recover {
+              case fe: ForbiddenException => forbiddenResponse(fe.message)
             }
           }
         }

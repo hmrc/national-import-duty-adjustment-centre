@@ -30,6 +30,7 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.auth.core.Enrolments
+import uk.gov.hmrc.http.ForbiddenException
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
@@ -172,14 +173,39 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         )
       }
 
+      "service throws ForbiddenException" in {
+        when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
+          Future.failed(new ForbiddenException("Not allowed here"))
+        )
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
+
+        status(result) must be(FORBIDDEN)
+        contentAsJson(result) mustBe Json.obj("statusCode" -> FORBIDDEN, "message" -> "Not allowed here")
+      }
+
     }
 
     "handle an invalid request" when {
 
       "request is invalid" in {
-        val result: Future[Result] = route(app, post.withJsonBody(Json.obj("field" -> "value"))).get
+        val result: Future[Result] =
+          route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(Json.obj("field" -> "value"))).get
 
         status(result) must be(BAD_REQUEST)
+        contentAsString(result) must include("Invalid CreateEISClaimRequest payload")
+        verifyNoInteractions(mockCreateCaseService)
+      }
+
+      "request is missing x-correlation-id" in {
+        val result: Future[Result] =
+          route(app, post.withJsonBody(toJson(createClaimRequest))).get
+
+        status(result) must be(BAD_REQUEST)
+        contentAsJson(result) mustBe Json.obj(
+          "statusCode" -> BAD_REQUEST,
+          "message"    -> "Missing header x-correlation-id"
+        )
         verifyNoInteractions(mockCreateCaseService)
       }
 
@@ -193,6 +219,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
         status(result) must be(UNAUTHORIZED)
+        contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
         verifyNoInteractions(mockCreateCaseService)
       }
 
@@ -203,6 +230,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
         status(result) must be(UNAUTHORIZED)
+        contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
         verifyNoInteractions(mockCreateCaseService)
       }
 
@@ -213,6 +241,7 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
         status(result) must be(UNAUTHORIZED)
+        contentAsJson(result) mustBe Json.obj("statusCode" -> UNAUTHORIZED, "message" -> "Invalid user")
         verifyNoInteractions(mockCreateCaseService)
       }
     }
