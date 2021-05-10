@@ -42,7 +42,7 @@ class CreateCaseService @Inject() (createCaseConnector: CreateCaseConnector) {
     if (eoriOk)
       createCaseConnector.submitClaim(request, correlationId)
     else
-      throw new ForbiddenException("Bad user")
+      Future.failed(new ForbiddenException("Bad user"))
   }
 
 }
