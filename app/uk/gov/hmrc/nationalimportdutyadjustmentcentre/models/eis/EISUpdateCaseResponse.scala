@@ -17,8 +17,10 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import java.time.Instant
-
 import play.api.libs.json._
+import uk.gov.hmrc.http.UpstreamErrorResponse
+
+import scala.util.{Failure, Success, Try}
 
 sealed trait EISUpdateCaseResponse
 
@@ -60,5 +62,29 @@ object EISUpdateCaseResponse {
     case e: EISUpdateCaseError =>
       EISUpdateCaseError.formats.writes(e)
   }
+
+  final def shouldRetry(response: Try[EISUpdateCaseResponse]): Boolean =
+    response match {
+      case Success(result)  =>
+        println(" success rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        true
+      case Failure(e) if e.asInstanceOf[UpstreamErrorResponse].statusCode == 429 =>
+        println(" 429 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        true
+      case Failure(e) if e.asInstanceOf[UpstreamErrorResponse].statusCode == 503 =>
+        println(" 503 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+        true
+      case _ => false
+    }
+
+  final def errorMessage(response: Try[EISUpdateCaseResponse]): String =
+    response match {
+      case Success(result)  =>
+        "Succesfully informed downstream was busy"
+      case Failure(e) if e.asInstanceOf[UpstreamErrorResponse].statusCode == 429 =>
+        "Quota reached"
+      case Failure(e) if e.asInstanceOf[UpstreamErrorResponse].statusCode == 503 =>
+        "Server was busy"
+    }
 
 }

@@ -16,35 +16,39 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
+import akka.actor.ActorSystem
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  EISUpdateCaseError,
-  EISUpdateCaseResponse,
-  EISUpdateCaseSuccess
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISUpdateCaseError, EISUpdateCaseResponse, EISUpdateCaseSuccess}
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
-class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
+class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, val actorSystem: ActorSystem)(implicit ec: ExecutionContext)
     extends ReadSuccessOrFailure[EISUpdateCaseResponse, EISUpdateCaseSuccess, EISUpdateCaseError](
       EISUpdateCaseError.fromStatusAndMessage
-    ) with EISConnector {
+    ) with EISConnector with Retry {
 
   val url: String = config.eisBaseUrl + config.eisUpdateCaseApiPath
 
   def updateClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISUpdateCaseResponse] =
-    http.POST[JsValue, EISUpdateCaseResponse](
-      url,
-      request,
-      eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
-    )(
-      implicitly[Writes[JsValue]],
-      readFromJsonSuccessOrFailure,
-      hc.copy(authorization = None),
-      implicitly[ExecutionContext]
-    )
+    retry(FiniteDuration(5, TimeUnit.SECONDS), FiniteDuration(10, TimeUnit.SECONDS))(
+      EISUpdateCaseResponse.shouldRetry,
+      EISUpdateCaseResponse.errorMessage
+    ) {
+      http.POST[JsValue, EISUpdateCaseResponse](
+        url,
+        request,
+        eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
+      )(
+        implicitly[Writes[JsValue]],
+        readFromJsonSuccessOrFailure,
+        hc.copy(authorization = None),
+        implicitly[ExecutionContext]
+      )
+    }
 
 }
