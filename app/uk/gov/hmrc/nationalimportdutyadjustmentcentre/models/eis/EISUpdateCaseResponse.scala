@@ -66,13 +66,10 @@ object EISUpdateCaseResponse {
   final def shouldRetry(response: Try[EISUpdateCaseResponse]): Boolean =
     response match {
       case Success(result)  =>
-        println(" success rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         true
       case Failure(e) if e.asInstanceOf[UpstreamErrorResponse].statusCode == 429 =>
-        println(" 429 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         true
       case Failure(e) if e.asInstanceOf[UpstreamErrorResponse].statusCode == 503 =>
-        println(" 503 rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
         true
       case _ => false
     }
