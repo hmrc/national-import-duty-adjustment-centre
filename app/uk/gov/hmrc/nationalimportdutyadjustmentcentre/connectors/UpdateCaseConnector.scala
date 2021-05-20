@@ -35,9 +35,10 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, 
   val url: String = config.eisBaseUrl + config.eisUpdateCaseApiPath
 
   def updateClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISUpdateCaseResponse] =
-    retry(FiniteDuration(1, TimeUnit.SECONDS), FiniteDuration(2, TimeUnit.SECONDS), FiniteDuration(3, TimeUnit.SECONDS), FiniteDuration(3, TimeUnit.SECONDS))(
+    retry(FiniteDuration(1, TimeUnit.SECONDS), FiniteDuration(2, TimeUnit.SECONDS), FiniteDuration(3, TimeUnit.SECONDS))(
       EISUpdateCaseResponse.shouldRetry,
-      EISUpdateCaseResponse.errorMessage
+      EISUpdateCaseResponse.errorMessage,
+      EISUpdateCaseResponse.delayInterval
     ) {
       val eventualResponse = http.POST[JsValue, EISUpdateCaseResponse](
         url,

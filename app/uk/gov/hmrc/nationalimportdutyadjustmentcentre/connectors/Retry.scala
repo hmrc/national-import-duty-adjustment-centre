@@ -29,8 +29,11 @@ trait Retry {
 
   protected def actorSystem: ActorSystem
 
-  def retry[A](intervals: FiniteDuration*)(shouldRetry: Try[A] => Boolean, retryReason: Try[A] => String)(
-    block: => Future[A]
+  def retry[A](intervals: FiniteDuration*)(
+    shouldRetry: Try[A] => Boolean,
+    retryReason: Try[A] => String,
+    delayInterval: Try[A] => Option[FiniteDuration]
+  )(block: => Future[A]
   )(implicit ec: ExecutionContext): Future[A] = {
     def loop(remainingIntervals: Seq[FiniteDuration])(mdcData: Map[String, String])(block: => Future[A]): Future[A] =
       // scheduling will loose MDC data. Here we explicitly ensure it is available on block.
@@ -39,7 +42,9 @@ trait Retry {
         .flatMap(
           result =>
             if (remainingIntervals.nonEmpty && shouldRetry(Success(result))) {
-              val delay = remainingIntervals.head
+              val defaultDelay = remainingIntervals.head
+              val delay = delayInterval(Success(result)).getOrElse(defaultDelay)
+
               Logger(getClass).warn(s"Retrying in $delay due to ${retryReason(Success(result))}")
               after(delay, actorSystem.scheduler)(loop(remainingIntervals.tail)(mdcData)(block))
             } else
@@ -48,7 +53,9 @@ trait Retry {
         .recoverWith {
           case e: Throwable =>
             if (remainingIntervals.nonEmpty && shouldRetry(Failure(e))) {
-              val delay = remainingIntervals.head
+              val defaultDelay = remainingIntervals.head
+              val delay = delayInterval(Failure(e)).getOrElse(defaultDelay)
+
               Logger(getClass).warn(s"Retrying in $delay due to ${retryReason(Failure(e))}")
               after(delay, actorSystem.scheduler)(loop(remainingIntervals.tail)(mdcData)(block))
             } else

@@ -20,6 +20,8 @@ import java.time.Instant
 import play.api.libs.json._
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Success, Try}
 
 sealed trait EISUpdateCaseResponse
@@ -66,15 +68,26 @@ object EISUpdateCaseResponse {
   final def shouldRetry(response: Try[EISUpdateCaseResponse]): Boolean = {
 
     response match {
-      case Success(error: EISUpdateCaseError) if error.errorDetail.errorCode.contains("STATUS429") => true
+      case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => true
       case _ => false
     }
   }
 
   final def errorMessage(response: Try[EISUpdateCaseResponse]): String = {
     response match {
-      case Success(error: EISUpdateCaseError) if error.errorDetail.errorCode.contains("STATUS429") =>
-        "Quota reached"
+      case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => "Quota reached"
+    }
+  }
+
+  final def delayInterval(response: Try[EISUpdateCaseResponse]): Option[FiniteDuration] = {
+    response match {
+      case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 =>
+
+        try {
+          Some(FiniteDuration(e.getMessage().toLong, TimeUnit.MILLISECONDS))
+        } catch {
+          case e: NumberFormatException => None
+        }
     }
   }
 
