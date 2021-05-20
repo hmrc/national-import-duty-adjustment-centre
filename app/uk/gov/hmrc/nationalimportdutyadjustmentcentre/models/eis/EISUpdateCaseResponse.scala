@@ -65,23 +65,15 @@ object EISUpdateCaseResponse {
 
   final def shouldRetry(response: Try[EISUpdateCaseResponse]): Boolean = {
 
-    println(s"response is ${response}")
-
     response match {
-      case Success(error: EISUpdateCaseError) if error.errorDetail.errorCode.contains("EISSIM429") => {
-        println("success match")
-        true
-      }
-      case _ => {
-        println("catch all match")
-        false
-      }
+      case Success(error: EISUpdateCaseError) if error.errorDetail.errorCode.contains("STATUS429") => true
+      case _ => false
     }
   }
 
   final def errorMessage(response: Try[EISUpdateCaseResponse]): String = {
     response match {
-      case Success(error: EISUpdateCaseError) if error.errorDetail.errorCode.contains("EISSIM429") =>
+      case Success(error: EISUpdateCaseError) if error.errorDetail.errorCode.contains("STATUS429") =>
         "Quota reached"
     }
   }
