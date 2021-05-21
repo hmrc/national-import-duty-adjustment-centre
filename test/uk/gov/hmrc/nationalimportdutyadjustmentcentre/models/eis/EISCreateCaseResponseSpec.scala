@@ -17,10 +17,14 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
 import play.api.libs.json.{JsSuccess, Json}
+import uk.gov.hmrc.http.UpstreamErrorResponse
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import java.time.Instant
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
+import scala.util.{Failure, Success}
 
 class EISCreateCaseResponseSpec extends UnitSpec with TestData {
 
@@ -63,6 +67,47 @@ class EISCreateCaseResponseSpec extends UnitSpec with TestData {
       }
     }
   }
+
+  "shouldRetry" when {
+    "an upstream error with status 429" should {
+      "return true" in {
+        EISCreateCaseResponse.shouldRetry(Failure(UpstreamErrorResponse("", 429))) mustBe true
+      }
+    }
+  }
+
+  "shouldRetry" when {
+    "an upstream error with status 404" should {
+      "return false" in {
+        EISCreateCaseResponse.shouldRetry(Failure(UpstreamErrorResponse("", 404))) mustBe false
+      }
+    }
+  }
+
+  "shouldRetry" when {
+    "success" should {
+      "return false" in {
+        EISCreateCaseResponse.shouldRetry(Success(EISCreateCaseResponseSpec.createCaseSuccess)) mustBe false
+      }
+    }
+  }
+
+  "delayInterval" when {
+    "an upstream error with status 429 and a numerical message" should {
+      "return correct Duration" in {
+        EISCreateCaseResponse.delayInterval(Failure(UpstreamErrorResponse("3000", 429))) mustBe Some(FiniteDuration(3000, TimeUnit.MILLISECONDS))
+      }
+    }
+  }
+
+  "delayInterval" when {
+    "an upstream error with status 429 and a non numerical message" should {
+      "return correct Duration" in {
+        EISCreateCaseResponse.delayInterval(Failure(UpstreamErrorResponse("unexpected", 429))) mustBe None
+      }
+    }
+  }
+
 }
 
 object EISCreateCaseResponseSpec {
