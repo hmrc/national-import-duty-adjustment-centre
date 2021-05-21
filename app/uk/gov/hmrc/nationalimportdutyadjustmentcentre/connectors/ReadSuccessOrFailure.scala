@@ -31,9 +31,8 @@ abstract class ReadSuccessOrFailure[A, S <: A: Reads, F <: A: Reads](fallback: (
     HttpReads[HttpResponse]
       .flatMap { response =>
         val status = response.status
-        if (status == 429) {
-          throw UpstreamErrorResponse(s"${response.header("Retry-After").getOrElse("DEFAULT")}" , 429)
-        }
+        if (status == 429)
+          throw UpstreamErrorResponse(s"${response.header("Retry-After").getOrElse("DEFAULT")}", 429)
         else if (response.body.isEmpty())
           HttpReads.pure(fallback(status, "Error: empty response"))
         else

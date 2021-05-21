@@ -95,7 +95,9 @@ class EISUpdateCaseResponseSpec extends UnitSpec with TestData {
   "delayInterval" when {
     "an upstream error with status 429 and a numerical message" should {
       "return correct Duration" in {
-        EISUpdateCaseResponse.delayInterval(Failure(UpstreamErrorResponse("3000", 429))) mustBe Some(FiniteDuration(3000, TimeUnit.MILLISECONDS))
+        EISUpdateCaseResponse.delayInterval(Failure(UpstreamErrorResponse("3000", 429))) mustBe Some(
+          FiniteDuration(3000, TimeUnit.MILLISECONDS)
+        )
       }
     }
   }

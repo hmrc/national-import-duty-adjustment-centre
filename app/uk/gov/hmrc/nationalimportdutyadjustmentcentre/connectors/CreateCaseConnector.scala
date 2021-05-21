@@ -21,21 +21,24 @@ import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseResponse, EISCreateCaseSuccess, EISUpdateCaseResponse}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
+  EISCreateCaseError,
+  EISCreateCaseResponse,
+  EISCreateCaseSuccess
+}
 
-import java.util.concurrent.TimeUnit
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, val actorSystem: ActorSystem)(implicit ec: ExecutionContext)
-    extends ReadSuccessOrFailure[EISCreateCaseResponse, EISCreateCaseSuccess, EISCreateCaseError](
+class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, val actorSystem: ActorSystem)(implicit
+  ec: ExecutionContext
+) extends ReadSuccessOrFailure[EISCreateCaseResponse, EISCreateCaseSuccess, EISCreateCaseError](
       EISCreateCaseError.fromStatusAndMessage
     ) with EISConnector with Retry {
 
   val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
   def submitClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISCreateCaseResponse] =
-    retry(FiniteDuration(1, TimeUnit.SECONDS), FiniteDuration(2, TimeUnit.SECONDS), FiniteDuration(3, TimeUnit.SECONDS))(
+    retry(config.retryDurations: _*)(
       EISCreateCaseResponse.shouldRetry,
       EISCreateCaseResponse.errorMessage,
       EISCreateCaseResponse.delayInterval

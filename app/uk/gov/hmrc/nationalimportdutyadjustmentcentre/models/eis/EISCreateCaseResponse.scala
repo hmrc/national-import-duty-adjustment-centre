@@ -63,30 +63,24 @@ object EISCreateCaseResponse {
       EISCreateCaseError.formats.writes(e)
   }
 
-  final def shouldRetry(response: Try[EISCreateCaseResponse]): Boolean = {
-
+  final def shouldRetry(response: Try[EISCreateCaseResponse]): Boolean =
     response match {
       case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => true
-      case _ => false
+      case _                                                        => false
     }
-  }
 
-  final def errorMessage(response: Try[EISCreateCaseResponse]): String = {
+  final def errorMessage(response: Try[EISCreateCaseResponse]): String =
     response match {
       case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => "Quota reached"
     }
-  }
 
-  final def delayInterval(response: Try[EISCreateCaseResponse]): Option[FiniteDuration] = {
+  final def delayInterval(response: Try[EISCreateCaseResponse]): Option[FiniteDuration] =
     response match {
       case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 =>
-
-        try {
-          Some(FiniteDuration(e.getMessage().toLong, TimeUnit.MILLISECONDS))
-        } catch {
+        try Some(FiniteDuration(e.getMessage().toLong, TimeUnit.MILLISECONDS))
+        catch {
           case e: NumberFormatException => None
         }
     }
-  }
 
 }

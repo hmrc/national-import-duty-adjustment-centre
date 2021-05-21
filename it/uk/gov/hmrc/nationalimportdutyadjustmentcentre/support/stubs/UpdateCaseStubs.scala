@@ -21,8 +21,6 @@ import com.github.tomakehurst.wiremock.stubbing.Scenario
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
-import scala.util.Random
-
 trait UpdateCaseStubs {
   me: WireMockSupport =>
 
