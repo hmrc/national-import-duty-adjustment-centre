@@ -66,7 +66,6 @@ object EISUpdateCaseResponse {
   }
 
   final def shouldRetry(response: Try[EISUpdateCaseResponse]): Boolean = {
-
     response match {
       case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => true
       case _ => false

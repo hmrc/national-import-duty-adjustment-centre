@@ -70,6 +70,20 @@ class UpdateCaseConnectorISpec extends UpdateCaseConnectorISpecSetup {
         error.errorDetail.errorMessage mustBe Some("Error: empty response")
       }
 
+      "retry if response indicates retry" in {
+
+        givenUpdateCaseResponseTooManyRequests()
+
+        val result = await(connector.updateClaim(testRequest, correlationId))
+
+        result mustBe EISUpdateCaseSuccess(
+          CaseID = caseId,
+          ProcessingDate = fixedInstant,
+          Status = "Success",
+          StatusText = "Case updated successfully"
+        )
+      }
+
       "return EISUpdateCaseError if no content type in response" in {
 
         givenUpdateCaseResponseWithNoContentType(505)

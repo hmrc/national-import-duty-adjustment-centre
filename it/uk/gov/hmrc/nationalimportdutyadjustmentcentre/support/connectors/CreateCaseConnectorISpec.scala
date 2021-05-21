@@ -21,11 +21,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, UpstreamErrorResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  EISCreateCaseError,
-  EISCreateCaseSuccess,
-  EISErrorDetail
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseSuccess, EISErrorDetail, EISUpdateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.AppBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.CreateCaseStubs
 
@@ -60,6 +56,20 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
             correlationId = Some("it-correlation-id"),
             timestamp = fixedInstant
           )
+        )
+      }
+
+      "retry if response indicates retry" in {
+
+        givenCreatCaseResponseTooManyRequests()
+
+        val result = await(connector.submitClaim(testRequest, correlationId))
+
+        result mustBe EISCreateCaseSuccess(
+          CaseID = caseId,
+          ProcessingDate = fixedInstant,
+          Status = "Success",
+          StatusText = "Case created successfully"
         )
       }
 
