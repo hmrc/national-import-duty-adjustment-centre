@@ -40,7 +40,7 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, 
       EISUpdateCaseResponse.errorMessage,
       EISUpdateCaseResponse.delayInterval
     ) {
-      val eventualResponse = http.POST[JsValue, EISUpdateCaseResponse](
+      http.POST[JsValue, EISUpdateCaseResponse](
         url,
         request,
         eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
@@ -50,7 +50,6 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, 
         hc.copy(authorization = None),
         implicitly[ExecutionContext]
       )
-      eventualResponse
     }
 
 }

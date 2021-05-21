@@ -16,35 +16,40 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
+import akka.actor.ActorSystem
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.{HeaderCarrier, _}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
-  EISCreateCaseError,
-  EISCreateCaseResponse,
-  EISCreateCaseSuccess
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseResponse, EISCreateCaseSuccess, EISUpdateCaseResponse}
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 
-class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
+class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, val actorSystem: ActorSystem)(implicit ec: ExecutionContext)
     extends ReadSuccessOrFailure[EISCreateCaseResponse, EISCreateCaseSuccess, EISCreateCaseError](
       EISCreateCaseError.fromStatusAndMessage
-    ) with EISConnector {
+    ) with EISConnector with Retry {
 
   val url: String = config.eisBaseUrl + config.eisCreateCaseApiPath
 
   def submitClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISCreateCaseResponse] =
-    http.POST[JsValue, EISCreateCaseResponse](
-      url,
-      request,
-      eisApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
-    )(
-      implicitly[Writes[JsValue]],
-      readFromJsonSuccessOrFailure,
-      hc.copy(authorization = None),
-      implicitly[ExecutionContext]
-    )
+    retry(FiniteDuration(1, TimeUnit.SECONDS), FiniteDuration(2, TimeUnit.SECONDS), FiniteDuration(3, TimeUnit.SECONDS))(
+      EISCreateCaseResponse.shouldRetry,
+      EISCreateCaseResponse.errorMessage,
+      EISCreateCaseResponse.delayInterval
+    ) {
+      http.POST[JsValue, EISCreateCaseResponse](
+        url,
+        request,
+        eisApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
+      )(
+        implicitly[Writes[JsValue]],
+        readFromJsonSuccessOrFailure,
+        hc.copy(authorization = None),
+        implicitly[ExecutionContext]
+      )
+    }
 
 }
