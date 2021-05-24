@@ -20,6 +20,9 @@ import javax.inject.{Inject, Singleton}
 import play.api.Configuration
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
+
 @Singleton
 class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig) {
 
@@ -52,6 +55,9 @@ class AppConfig @Inject() (config: Configuration, servicesConfig: ServicesConfig
   def allowEori(eoriNumber: String): Boolean = !allowListEnabled || allowedEoris.contains(eoriNumber)
 
   private def servicesConfig(key: String): String = servicesConfig.getConfString(key, throwConfigNotFoundError(key))
+
+  val retryDurations: Seq[FiniteDuration] =
+    config.get[Seq[Int]](path = "retry.durations").map(x => FiniteDuration(x, TimeUnit.SECONDS))
 
   private def throwConfigNotFoundError(key: String) =
     throw new RuntimeException(s"Could not find config key '$key'")

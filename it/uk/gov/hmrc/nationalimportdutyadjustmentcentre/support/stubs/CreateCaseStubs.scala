@@ -17,13 +17,14 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.Scenario
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
 trait CreateCaseStubs {
   me: WireMockSupport =>
 
-  val UPDATE_CASE_URL = "/eis-stub/create-case"
+  val CREATE_CASE_URL = "/eis-stub/create-case"
 
   val caseId = "NID21134557697RM8WIB13"
 
@@ -51,8 +52,35 @@ trait CreateCaseStubs {
   def givenCreateCaseResponseWithErrorMessage(status: Int, responseBody: String = errorResponseJson): Unit =
     stubForPostWithResponse(status, responseBody)
 
+  def givenCreatCaseResponseTooManyRequests(): Unit = {
+
+    stubFor(
+      post(urlEqualTo(CREATE_CASE_URL))
+        .inScenario("retry")
+        .whenScenarioStateIs(Scenario.STARTED)
+        .willSetStateTo("stllno")
+        .willReturn(aResponse().withStatus(429).withHeader("Retry-After", "300"))
+    )
+
+    stubFor(
+      post(urlEqualTo(CREATE_CASE_URL))
+        .inScenario("retry")
+        .whenScenarioStateIs("stllno")
+        .willSetStateTo("oknow")
+        .willReturn(aResponse().withStatus(429).withHeader("Retry-After", "300"))
+    )
+
+    stubFor(
+      post(urlEqualTo(CREATE_CASE_URL))
+        .inScenario("retry")
+        .whenScenarioStateIs("oknow")
+        .willSetStateTo(Scenario.STARTED)
+        .willReturn(aResponse().withStatus(200).withBody(successResponseJson).withHeader("Content-Type", MimeTypes.JSON))
+    )
+  }
+
   def givenCreateCaseResponseWithNoBody(status: Int): Unit = stubFor(
-    post(urlEqualTo(UPDATE_CASE_URL))
+    post(urlEqualTo(CREATE_CASE_URL))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -61,7 +89,7 @@ trait CreateCaseStubs {
   )
 
   def givenCreateCaseResponseWithNoContentType(status: Int): Unit = stubFor(
-    post(urlEqualTo(UPDATE_CASE_URL))
+    post(urlEqualTo(CREATE_CASE_URL))
       .willReturn(
         aResponse()
           .withStatus(status)
@@ -74,7 +102,7 @@ trait CreateCaseStubs {
 
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
     stubFor(
-      post(urlEqualTo(UPDATE_CASE_URL))
+      post(urlEqualTo(CREATE_CASE_URL))
         .willReturn(
           aResponse()
             .withStatus(status)

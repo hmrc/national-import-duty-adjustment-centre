@@ -16,9 +16,13 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 
-import java.time.Instant
-
 import play.api.libs.json._
+import uk.gov.hmrc.http.UpstreamErrorResponse
+
+import java.time.Instant
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.FiniteDuration
+import scala.util.{Failure, Try}
 
 sealed trait EISUpdateCaseResponse
 
@@ -60,5 +64,25 @@ object EISUpdateCaseResponse {
     case e: EISUpdateCaseError =>
       EISUpdateCaseError.formats.writes(e)
   }
+
+  final def shouldRetry(response: Try[EISUpdateCaseResponse]): Boolean =
+    response match {
+      case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => true
+      case _                                                        => false
+    }
+
+  final def errorMessage(response: Try[EISUpdateCaseResponse]): String =
+    response match {
+      case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 => "Quota reached"
+    }
+
+  final def delayInterval(response: Try[EISUpdateCaseResponse]): Option[FiniteDuration] =
+    response match {
+      case Failure(e: UpstreamErrorResponse) if e.statusCode == 429 =>
+        try Some(FiniteDuration(e.getMessage().toLong, TimeUnit.MILLISECONDS))
+        catch {
+          case e: NumberFormatException => None
+        }
+    }
 
 }

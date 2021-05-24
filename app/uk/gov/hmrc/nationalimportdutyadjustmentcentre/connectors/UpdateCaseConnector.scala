@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
+import akka.actor.ActorSystem
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Writes}
 import uk.gov.hmrc.http.{HeaderCarrier, _}
@@ -28,23 +29,30 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost)(implicit ec: ExecutionContext)
-    extends ReadSuccessOrFailure[EISUpdateCaseResponse, EISUpdateCaseSuccess, EISUpdateCaseError](
+class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, val actorSystem: ActorSystem)(implicit
+  ec: ExecutionContext
+) extends ReadSuccessOrFailure[EISUpdateCaseResponse, EISUpdateCaseSuccess, EISUpdateCaseError](
       EISUpdateCaseError.fromStatusAndMessage
-    ) with EISConnector {
+    ) with EISConnector with Retry {
 
   val url: String = config.eisBaseUrl + config.eisUpdateCaseApiPath
 
   def updateClaim(request: JsValue, correlationId: String)(implicit hc: HeaderCarrier): Future[EISUpdateCaseResponse] =
-    http.POST[JsValue, EISUpdateCaseResponse](
-      url,
-      request,
-      eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
-    )(
-      implicitly[Writes[JsValue]],
-      readFromJsonSuccessOrFailure,
-      hc.copy(authorization = None),
-      implicitly[ExecutionContext]
-    )
+    retry(config.retryDurations: _*)(
+      EISUpdateCaseResponse.shouldRetry,
+      EISUpdateCaseResponse.errorMessage,
+      EISUpdateCaseResponse.delayInterval
+    ) {
+      http.POST[JsValue, EISUpdateCaseResponse](
+        url,
+        request,
+        eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
+      )(
+        implicitly[Writes[JsValue]],
+        readFromJsonSuccessOrFailure,
+        hc.copy(authorization = None),
+        implicitly[ExecutionContext]
+      )
+    }
 
 }
