@@ -16,22 +16,20 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import javax.inject.{Inject, Singleton}
+import akka.actor.{ActorRef, ActorSystem, Props}
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, ControllerComponents}
-import uk.gov.hmrc.http.ForbiddenException
+import uk.gov.hmrc.http.{ForbiddenException, HeaderCarrier}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors.FileTransferActor
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{FileTransferConnector, MicroserviceAuthConnector}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers.Responses.forbiddenResponse
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISCreateCaseError, EISCreateCaseSuccess}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
-  CreateClaimResponse,
-  CreateClaimResult,
-  CreateEISClaimRequest
-}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{CreateCaseService, FileTransferService}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.CreateCaseService
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton()
@@ -39,7 +37,8 @@ class CreateClaimController @Inject() (
   val authConnector: MicroserviceAuthConnector,
   cc: ControllerComponents,
   createCaseService: CreateCaseService,
-  fileTransferService: FileTransferService
+  fileTransferConnector: FileTransferConnector,
+  actorSystem: ActorSystem
 )(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends BackendController(cc) with AuthActions with WithEORINumber with WithCorrelationId {
 
@@ -52,7 +51,7 @@ class CreateClaimController @Inject() (
               eisResponse =>
                 val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
                   case success: EISCreateCaseSuccess =>
-                    fileTransferService.transferFiles(
+                    transferFilesToPega(
                       success.CaseID,
                       correlationId,
                       createClaimRequest.uploadedFiles
@@ -92,4 +91,21 @@ class CreateClaimController @Inject() (
     }
   }
 
+  private def transferFilesToPega(caseReferenceNumber: String,
+                                   conversationId: String,
+                                   uploadedFiles: Seq[UploadedFile])(implicit hc: HeaderCarrier): Future[Seq[FileTransferResult]] = {
+
+    // Single-use actor responsible for transferring files batch to PEGA
+    val fileTransferActor: ActorRef =
+      actorSystem.actorOf(
+        Props(classOf[FileTransferActor], caseReferenceNumber, fileTransferConnector, conversationId)
+      )
+
+      fileTransferActor ! FileTransferActor.TransferMultipleFiles(
+        uploadedFiles.zipWithIndex,
+        uploadedFiles.size,
+        hc
+      )
+      Future.successful(Seq.empty)
+  }
 }
