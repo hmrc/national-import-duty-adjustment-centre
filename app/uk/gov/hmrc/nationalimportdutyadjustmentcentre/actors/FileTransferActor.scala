@@ -31,7 +31,8 @@ import scala.concurrent.duration.FiniteDuration
 class FileTransferActor(
                          caseReferenceNumber: String,
                          fileTransferConnector: FileTransferConnector,
-                         conversationId: String
+                         conversationId: String,
+                         auditor: ActorRef
                        ) extends Actor {
 
   import FileTransferActor._
