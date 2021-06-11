@@ -18,14 +18,11 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 
 import play.api.libs.json.{Json, Writes}
 
-case class FileTransferAudit(fileTransferResults: Seq[FileTransferResult])
+case class FileTransferAudit(caseReferenceNumber: String, fileTransferResults: Seq[FileTransferResult])
 
 object FileTransferAudit {
 
   implicit val resultWrites: Writes[FileTransferAudit] = Json.writes[FileTransferAudit]
-
-  def apply(fileTransferResults: Seq[FileTransferResult]): FileTransferAudit =
-    FileTransferAudit(fileTransferResults)
 
 }
 

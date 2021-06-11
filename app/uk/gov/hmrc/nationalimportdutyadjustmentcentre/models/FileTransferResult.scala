@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 
-import java.time.Instant
+import play.api.libs.json.{Json, OFormat, Reads, Writes}
 
-import play.api.libs.json.{Json, OFormat}
+import java.time.Instant
 
 case class FileTransferResult(
   upscanReference: String,
@@ -29,5 +29,11 @@ case class FileTransferResult(
 )
 
 object FileTransferResult {
+
+  implicit val resultWrites: Writes[FileTransferResult] = Json.writes[FileTransferResult]
+  implicit val resultReads: Reads[FileTransferResult] = Json.reads[FileTransferResult]
+
   implicit val formats: OFormat[FileTransferResult] = Json.format[FileTransferResult]
+
+
 }

@@ -20,6 +20,7 @@ import akka.actor.{Actor, ActorRef, Status}
 import akka.pattern.pipe
 import play.api.Logger
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors.FileTransferAuditActor.AuditFileTransferResults
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferResult, UploadedFile}
@@ -83,9 +84,7 @@ class FileTransferActor(
 
       if (results.size == batchSize) {
 
-        clientRef ! results
-
-        Logger(getClass).info(s"we transferred ${results.size} files")
+        auditor ! AuditFileTransferResults(results)
 
         context.stop(self)
       } else

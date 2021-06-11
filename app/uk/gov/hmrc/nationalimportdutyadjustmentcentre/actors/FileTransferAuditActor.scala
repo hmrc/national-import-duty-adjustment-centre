@@ -16,57 +16,36 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors
 
-import akka.actor.{Actor, ActorRef, Status}
-import akka.pattern.pipe
-import play.api.Logger
+import akka.actor.Actor
 import play.api.libs.json.Json
-import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferAudit, FileTransferResult, UploadedFile}
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferAudit, FileTransferResult}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
-import java.time.{LocalDateTime, ZoneOffset}
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.ExecutionContext
 
 class FileTransferAuditActor(
                               caseReferenceNumber: String,
                               auditConnector: AuditConnector,
-                              conversationId: String
+                              conversationId: String,
+                              headerCarrier: HeaderCarrier,
+                              executionContext: ExecutionContext
                        ) extends Actor {
 
-  import context.dispatcher
   import FileTransferAuditActor.AuditFileTransferResults
 
 
   override def receive: Receive = {
 
-    case AuditFileTransferResults(results, headerCarrier, ec) =>
-
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" We are in another actor")
-      println(" ======================== ")
-      println(s"${caseReferenceNumber} - ${conversationId}")
-
-//      val body = FileTransferAudit(results)
-//      auditConnector.sendExplicitAudit("pleaseAudit", body)(headerCarrier, ec, Json.writes[FileTransferAudit])
-
-
+    case AuditFileTransferResults(results) =>
+      auditConnector.sendExplicitAudit("FilesTransferred", FileTransferAudit(caseReferenceNumber, results))(headerCarrier, executionContext, Json.writes[FileTransferAudit])
+      context.stop(self)
   }
-
 
 }
 
 object FileTransferAuditActor {
-  case class AuditFileTransferResults(results: Seq[FileTransferResult], headerCarrier: HeaderCarrier, executionContext: ExecutionContext)
+  case class AuditFileTransferResults(results: Seq[FileTransferResult])
 }
 
 
