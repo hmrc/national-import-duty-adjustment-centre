@@ -98,15 +98,9 @@ class UpdateClaimController @Inject() (
         Props(classOf[FileTransferActor], caseReferenceNumber, fileTransferConnector, conversationId, auditActor)
       )
 
-    val testFiles = Seq(
-      UploadedFile("amend", "amend", "amend", "amend", "amend"),
-      UploadedFile("change", "change", "change", "change", "change"),
-      UploadedFile("adapt", "adapt", "adapt", "adapt", "adapt")
-    )
-
     fileTransferActor ! FileTransferActor.TransferMultipleFiles(
-      testFiles.zipWithIndex,
-      testFiles.size,
+      uploadedFiles.zipWithIndex,
+      uploadedFiles.size,
       hc
     )
     Future.successful(Seq.empty)
