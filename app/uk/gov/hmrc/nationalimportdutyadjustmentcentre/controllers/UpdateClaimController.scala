@@ -22,7 +22,11 @@ import play.api.mvc.{Action, ControllerComponents}
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors.{FileTransferActor, FileTransferAuditActor}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{FileTransferConnector, MicroserviceAuthConnector, UpdateCaseConnector}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{
+  FileTransferConnector,
+  MicroserviceAuthConnector,
+  UpdateCaseConnector
+}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{ApiError, EISUpdateCaseError, EISUpdateCaseSuccess}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -50,11 +54,7 @@ class UpdateClaimController @Inject() (
             updateCaseConnector.updateClaim(updateClaimRequest.eisRequest, correlationId) flatMap { eisResponse =>
               val updateClaimResponse: Future[UpdateClaimResponse] = eisResponse match {
                 case success: EISUpdateCaseSuccess =>
-                  transferFilesToPega(
-                    success.CaseID,
-                    correlationId,
-                    updateClaimRequest.uploadedFiles
-                  ) map {
+                  transferFilesToPega(success.CaseID, correlationId, updateClaimRequest.uploadedFiles) map {
                     uploadResults =>
                       UpdateClaimResponse(
                         correlationId = correlationId,
@@ -86,11 +86,15 @@ class UpdateClaimController @Inject() (
     }
   }
 
-  private def transferFilesToPega(caseReferenceNumber: String,
-                                  conversationId: String,
-                                  uploadedFiles: Seq[UploadedFile])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Seq[FileTransferResult]] = {
+  private def transferFilesToPega(
+    caseReferenceNumber: String,
+    conversationId: String,
+    uploadedFiles: Seq[UploadedFile]
+  )(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Seq[FileTransferResult]] = {
 
-    val auditActor: ActorRef = actorSystem.actorOf(Props(classOf[FileTransferAuditActor], caseReferenceNumber, auditConnector, conversationId, hc, executionContext))
+    val auditActor: ActorRef = actorSystem.actorOf(
+      Props(classOf[FileTransferAuditActor], caseReferenceNumber, auditConnector, conversationId, hc, executionContext)
+    )
 
     // Single-use actor responsible for transferring files batch to PEGA
     val fileTransferActor: ActorRef =
@@ -98,11 +102,7 @@ class UpdateClaimController @Inject() (
         Props(classOf[FileTransferActor], caseReferenceNumber, fileTransferConnector, conversationId, auditActor)
       )
 
-    fileTransferActor ! FileTransferActor.TransferMultipleFiles(
-      uploadedFiles.zipWithIndex,
-      uploadedFiles.size,
-      hc
-    )
+    fileTransferActor ! FileTransferActor.TransferMultipleFiles(uploadedFiles.zipWithIndex, uploadedFiles.size, hc)
     Future.successful(Seq.empty)
   }
 

@@ -30,27 +30,26 @@ import scala.concurrent.Future
 import scala.concurrent.duration.FiniteDuration
 
 class FileTransferActor(
-                         caseReferenceNumber: String,
-                         fileTransferConnector: FileTransferConnector,
-                         conversationId: String,
-                         auditor: ActorRef
-                       ) extends Actor {
+  caseReferenceNumber: String,
+  fileTransferConnector: FileTransferConnector,
+  conversationId: String,
+  auditor: ActorRef
+) extends Actor {
 
   import FileTransferActor._
   import context.dispatcher
 
-  var clientRef: ActorRef = ActorRef.noSender
+  var clientRef: ActorRef              = ActorRef.noSender
   var results: Seq[FileTransferResult] = Seq.empty
 
   override def receive: Receive = {
-
 
     case TransferMultipleFiles(files, batchSize, headerCarrier) =>
       clientRef = sender()
       files.map {
         case (file, index) => TransferSingleFile(file, index, batchSize, headerCarrier)
       }
-      .foreach(message => self ! message)
+        .foreach(message => self ! message)
       self ! CheckComplete(batchSize)
 
     case TransferSingleFile(file, index, batchSize, headerCarrier) =>
@@ -81,7 +80,6 @@ class FileTransferActor(
       )
 
     case CheckComplete(batchSize) =>
-
       if (results.size == batchSize) {
 
         auditor ! AuditFileTransferResults(results)
@@ -92,16 +90,21 @@ class FileTransferActor(
           .scheduleOnce(FiniteDuration(500, "ms"), self, CheckComplete(batchSize))
   }
 
-  def transferAFile(file: UploadedFile, index: Int, batchSize: Int)(implicit hc: HeaderCarrier): Future[FileTransferResult] =
-    fileTransferConnector.transferFile(TraderServicesFileTransferRequest
-      .fromUploadedFile(
-        caseReferenceNumber,
-        conversationId,
-        applicationName = "NIDAC",
-        batchSize = batchSize,
-        batchCount = index + 1,
-        uploadedFile = file
-      ))
+  def transferAFile(file: UploadedFile, index: Int, batchSize: Int)(implicit
+    hc: HeaderCarrier
+  ): Future[FileTransferResult] =
+    fileTransferConnector.transferFile(
+      TraderServicesFileTransferRequest
+        .fromUploadedFile(
+          caseReferenceNumber,
+          conversationId,
+          applicationName = "NIDAC",
+          batchSize = batchSize,
+          batchCount = index + 1,
+          uploadedFile = file
+        )
+    )
+
 }
 
 object FileTransferActor {

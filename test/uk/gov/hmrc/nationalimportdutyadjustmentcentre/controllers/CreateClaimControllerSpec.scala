@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import java.time.Instant
-
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.{reset, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -40,20 +38,19 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
   CreateClaimResult,
   FileTransferResult
 }
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{CreateCaseService, FileTransferService}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.CreateCaseService
 
+import java.time.Instant
 import scala.concurrent.Future
 
 class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite {
 
-  private val mockCreateCaseService   = mock[CreateCaseService]
-  private val mockFileTransferService = mock[FileTransferService]
+  private val mockCreateCaseService = mock[CreateCaseService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(
       bind[MicroserviceAuthConnector].to(mockAuthConnector),
       bind[CreateCaseService].to(mockCreateCaseService),
-      bind[FileTransferService].to(mockFileTransferService),
       bind[AppConfig].to(mockAppConfig)
     )
     .build()
@@ -81,7 +78,6 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisCreateSuccessResponse)
         )
-        when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(Future.successful(Seq.empty))
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
@@ -101,19 +97,8 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           Future.successful(eisCreateSuccessResponse)
         )
 
-        val uploads = uploadedFiles("upscanReference")
-        val fileTransferResults = Seq(
-          FileTransferResult(
-            upscanReference = "upscanReference",
-            success = true,
-            httpStatus = 202,
-            transferredAt = Instant.now
-          )
-        )
-
-        when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(
-          Future.successful(fileTransferResults)
-        )
+        val uploads             = uploadedFiles("upscanReference")
+        val fileTransferResults = Seq.empty
 
         val request = createClaimRequest.copy(uploadedFiles = uploads)
 

@@ -24,6 +24,41 @@ trait FileTransferStubs {
 
   val FILE_TRANSFER_URL = "/file-transmission-synchronous-stub/transfer-file"
 
+  def givenTraderServicesFileTransferSucceeds(
+                                               caseReferenceNumber: String,
+                                               fileName: String,
+                                               conversationId: String
+                                             ): Unit = {
+
+    stubFor(
+      post(urlPathEqualTo(FILE_TRANSFER_URL))
+        .withRequestBody(
+          equalToJson(
+            s"""{
+               |   "caseReferenceNumber":"$caseReferenceNumber",
+               |   "fileName":"$fileName",
+               |   "conversationId":"$conversationId"
+               |}""".stripMargin,
+            true,
+            true
+          )
+        )
+        .willReturn(
+          aResponse()
+            .withStatus(202)
+        )
+    )
+  }
+
+  def givenTraderServicesFileTransfer(): Unit =
+    stubFor(
+      post(urlPathEqualTo(FILE_TRANSFER_URL))
+        .willReturn(
+          aResponse()
+            .withStatus(202)
+        )
+    )
+
   def givenTraderServicesFileTransferWithStatus(status: Int): Unit =
     stubFor(
       post(urlPathEqualTo(FILE_TRANSFER_URL))

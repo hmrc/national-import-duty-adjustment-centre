@@ -31,7 +31,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
     "transferFile" should {
       "return success if successful" in {
 
-        givenTraderServicesFileTransferWithStatus(202)
+        givenTraderServicesFileTransfer()
 
         val request = testRequest(UUID.randomUUID().toString)
         val result  = await(connector.transferFile(request))

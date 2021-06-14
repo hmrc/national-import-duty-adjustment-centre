@@ -53,11 +53,7 @@ class CreateClaimController @Inject() (
               eisResponse =>
                 val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
                   case success: EISCreateCaseSuccess =>
-                    transferFilesToPega(
-                      success.CaseID,
-                      correlationId,
-                      createClaimRequest.uploadedFiles
-                    ) map {
+                    transferFilesToPega(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
                       uploadResults =>
                         CreateClaimResponse(
                           correlationId = correlationId,
@@ -93,11 +89,15 @@ class CreateClaimController @Inject() (
     }
   }
 
-  private def transferFilesToPega(caseReferenceNumber: String,
-                                  conversationId: String,
-                                  uploadedFiles: Seq[UploadedFile])(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Seq[FileTransferResult]] = {
+  private def transferFilesToPega(
+    caseReferenceNumber: String,
+    conversationId: String,
+    uploadedFiles: Seq[UploadedFile]
+  )(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[Seq[FileTransferResult]] = {
 
-    val auditActor: ActorRef = actorSystem.actorOf(Props(classOf[FileTransferAuditActor], caseReferenceNumber, auditConnector, conversationId, hc, executionContext))
+    val auditActor: ActorRef = actorSystem.actorOf(
+      Props(classOf[FileTransferAuditActor], caseReferenceNumber, auditConnector, conversationId, hc, executionContext)
+    )
 
     // Single-use actor responsible for transferring files batch to PEGA
     val fileTransferActor: ActorRef =
@@ -105,11 +105,8 @@ class CreateClaimController @Inject() (
         Props(classOf[FileTransferActor], caseReferenceNumber, fileTransferConnector, conversationId, auditActor)
       )
 
-    fileTransferActor ! FileTransferActor.TransferMultipleFiles(
-      uploadedFiles.zipWithIndex,
-      uploadedFiles.size,
-      hc
-    )
+    fileTransferActor ! FileTransferActor.TransferMultipleFiles(uploadedFiles.zipWithIndex, uploadedFiles.size, hc)
     Future.successful(Seq.empty)
   }
+
 }

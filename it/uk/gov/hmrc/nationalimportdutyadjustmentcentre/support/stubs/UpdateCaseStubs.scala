@@ -46,8 +46,10 @@ trait UpdateCaseStubs {
        |    }
        |}""".stripMargin
 
-  def givenUpdateCaseResponseWithSuccessMessage(responseBody: String = successResponseJson): Unit =
+  def givenUpdateCaseResponseWithSuccessMessage(responseBody: String = successResponseJson): Unit = {
+
     stubForPostWithResponse(200, responseBody)
+  }
 
   def givenUpdateCaseResponseWithErrorMessage(status: Int, responseBody: String = errorResponseJson): Unit =
     stubForPostWithResponse(status, responseBody)
@@ -99,6 +101,9 @@ trait UpdateCaseStubs {
 
   def givenUpdateCaseResponseWithStatusContentTypeAndBody(status: Int = 200, contentType: String, body: String = successResponseJson): Unit =
     stubForPostWithResponse(status, body, contentType)
+
+  def verifyCaseSubmitted(times: Int = 1) =
+    verify(times, postRequestedFor(urlPathEqualTo(UPDATE_CASE_URL)))
 
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
     stubFor(

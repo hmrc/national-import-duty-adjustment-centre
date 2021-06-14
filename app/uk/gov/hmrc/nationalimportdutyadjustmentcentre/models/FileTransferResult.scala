@@ -31,9 +31,8 @@ case class FileTransferResult(
 object FileTransferResult {
 
   implicit val resultWrites: Writes[FileTransferResult] = Json.writes[FileTransferResult]
-  implicit val resultReads: Reads[FileTransferResult] = Json.reads[FileTransferResult]
+  implicit val resultReads: Reads[FileTransferResult]   = Json.reads[FileTransferResult]
 
   implicit val formats: OFormat[FileTransferResult] = Json.format[FileTransferResult]
-
 
 }

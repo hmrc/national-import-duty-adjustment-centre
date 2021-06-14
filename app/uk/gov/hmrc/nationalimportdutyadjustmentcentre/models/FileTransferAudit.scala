@@ -25,5 +25,3 @@ object FileTransferAudit {
   implicit val resultWrites: Writes[FileTransferAudit] = Json.writes[FileTransferAudit]
 
 }
-
-
