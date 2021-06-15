@@ -21,7 +21,7 @@ import java.util.UUID
 import play.api.Application
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.FileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.AppBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.FileTransferStubs
 
@@ -31,7 +31,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
     "transferFile" should {
       "return success if successful" in {
 
-        givenTraderServicesFileTransfer()
+        givenFileTransfer()
 
         val request = testRequest(UUID.randomUUID().toString)
         val result  = await(connector.transferFile(request))
@@ -40,12 +40,12 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
         result.success mustBe true
         result.httpStatus mustBe 202
 
-        verifyTraderServicesFileTransferHasHappened(times = 1)
+        verifyFileTransferHasHappened(times = 1)
       }
 
       "return failure for non-2xx response" in {
 
-        givenTraderServicesFileTransferWithStatus(403)
+        givenFileTransferWithStatus(403)
 
         val request = testRequest(UUID.randomUUID().toString)
         val result  = await(connector.transferFile(request))
@@ -55,7 +55,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
         result.httpStatus mustBe 403
         result.error mustBe None
 
-        verifyTraderServicesFileTransferHasHappened(times = 1)
+        verifyFileTransferHasHappened(times = 1)
       }
 
     }
@@ -71,7 +71,7 @@ trait FileTransferConnectorISpecSetup extends AppBaseISpec with FileTransferStub
   lazy val connector: FileTransferConnector =
     app.injector.instanceOf[FileTransferConnector]
 
-  def testRequest(upscanReference: String): TraderServicesFileTransferRequest = TraderServicesFileTransferRequest(
+  def testRequest(upscanReference: String): FileTransferRequest = FileTransferRequest(
     conversationId = "",
     caseReferenceNumber = "NID21134557697RM8WIB13",
     applicationName = "",

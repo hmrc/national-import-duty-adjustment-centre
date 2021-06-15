@@ -112,7 +112,7 @@ class CreateClaimControllerISpec
 
       givenAuthorisedAsValidTrader("GB123456789000")
       givenCreateCaseResponseWithSuccessMessage()
-      givenTraderServicesFileTransferSucceeds("NID21134557697RM8WIB13", "my-form.pdf", correlationId)
+      givenFileTransferSucceeds("NID21134557697RM8WIB13", "my-form.pdf", correlationId)
 
       wsClient
         .url(s"$baseUrl/create-claim")
@@ -121,7 +121,7 @@ class CreateClaimControllerISpec
 
 
       verifyCaseCreated(1)
-      verifyTraderServicesFileTransferHasHappened(1)
+      verifyFileTransferHasHappened(1)
     }
 
 

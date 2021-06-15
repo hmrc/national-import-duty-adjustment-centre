@@ -77,8 +77,8 @@ class UpdateCaseControllerISpec
 
       givenAuthorisedAsValidTrader("my-eori")
       givenUpdateCaseResponseWithSuccessMessage()
-      givenTraderServicesFileTransferSucceeds("NID21134557697RM8WIB13", "my-id.jpg", correlationId)
-      givenTraderServicesFileTransferSucceeds("NID21134557697RM8WIB13", "my-scan.jpg", correlationId)
+      givenFileTransferSucceeds("NID21134557697RM8WIB13", "my-id.jpg", correlationId)
+      givenFileTransferSucceeds("NID21134557697RM8WIB13", "my-scan.jpg", correlationId)
 
       wsClient
         .url(s"$baseUrl/update-claim")
@@ -87,7 +87,7 @@ class UpdateCaseControllerISpec
 
 
       verifyCaseUpdated(1)
-      verifyTraderServicesFileTransferHasHappened(2)
+      verifyFileTransferHasHappened(2)
     }
 
 

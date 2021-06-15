@@ -22,7 +22,7 @@ import play.api.Logger
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors.FileTransferAuditActor.AuditFileTransferResults
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.FileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferResult, UploadedFile}
 
 import java.time.{LocalDateTime, ZoneOffset}
@@ -94,7 +94,7 @@ class FileTransferActor(
     hc: HeaderCarrier
   ): Future[FileTransferResult] =
     fileTransferConnector.transferFile(
-      TraderServicesFileTransferRequest
+      FileTransferRequest
         .fromUploadedFile(
           caseReferenceNumber,
           conversationId,

@@ -23,7 +23,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.FileTransferResult
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.FileTransferRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,11 +31,9 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
 
   final lazy val url = config.fileTransferBaseUrl + config.fileTransferPath
 
-  def transferFile(
-    fileTransferRequest: TraderServicesFileTransferRequest
-  )(implicit hc: HeaderCarrier): Future[FileTransferResult] =
+  def transferFile(fileTransferRequest: FileTransferRequest)(implicit hc: HeaderCarrier): Future[FileTransferResult] =
     http
-      .POST[TraderServicesFileTransferRequest, HttpResponse](url, fileTransferRequest)
+      .POST[FileTransferRequest, HttpResponse](url, fileTransferRequest)
       .map(
         response =>
           FileTransferResult(
