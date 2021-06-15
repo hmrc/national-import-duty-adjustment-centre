@@ -102,7 +102,7 @@ trait UpdateCaseStubs {
   def givenUpdateCaseResponseWithStatusContentTypeAndBody(status: Int = 200, contentType: String, body: String = successResponseJson): Unit =
     stubForPostWithResponse(status, body, contentType)
 
-  def verifyCaseSubmitted(times: Int = 1) =
+  def verifyCaseUpdated(times: Int = 1) =
     verify(times, postRequestedFor(urlPathEqualTo(UPDATE_CASE_URL)))
 
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =

@@ -80,18 +80,14 @@ class UpdateCaseControllerISpec
       givenTraderServicesFileTransferSucceeds("NID21134557697RM8WIB13", "my-id.jpg", correlationId)
       givenTraderServicesFileTransferSucceeds("NID21134557697RM8WIB13", "my-scan.jpg", correlationId)
 
-      val result = wsClient
+      wsClient
         .url(s"$baseUrl/update-claim")
         .withHttpHeaders("X-Correlation-ID" -> correlationId)
         .post(testRequest).futureValue
 
 
-      verifyCaseSubmitted(1)
+      verifyCaseUpdated(1)
       verifyTraderServicesFileTransferHasHappened(2)
-
-
-
-
     }
 
 
