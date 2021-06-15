@@ -69,7 +69,6 @@ class FileTransferActorSpec
 
     "handle failed transfers" in {
 
-      val transferInstant = LocalDateTime.now().toInstant(ZoneOffset.UTC)
       when(mockFileTransferConnector.transferFile(any())(any()))
         .thenReturn(Future.failed(new Exception("unexpected")))
 
@@ -84,7 +83,6 @@ class FileTransferActorSpec
 
     "handle upstream errors" in {
 
-      val transferInstant = LocalDateTime.now().toInstant(ZoneOffset.UTC)
       when(mockFileTransferConnector.transferFile(any())(any()))
         .thenReturn(Future.failed(new NotFoundException("File not found")))
 
