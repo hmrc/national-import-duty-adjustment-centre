@@ -17,41 +17,23 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
-import com.github.tomakehurst.wiremock.stubbing.Scenario
-import play.mvc.Http.MimeTypes
+import org.scalatest.concurrent.Eventually
+import org.scalatest.time.{Millis, Seconds, Span}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
-trait AuditStubs {
+trait AuditStubs extends Eventually {
   me: WireMockSupport =>
 
-  val AUDIT_URL = "/write/audit"
-  val AUDIT_MERGED_URL = "/write/audit/merged"
+  override implicit val patienceConfig =
+    PatienceConfig(scaled(Span(5, Seconds)), scaled(Span(500, Millis)))
 
-  def givenFileTransferAuditted(): Unit = {
 
-    stubForPostWithResponse(204)
-    stubForImplicitAudits(204)
+  def verifyAuditEvent() =
+    eventually(verify(postRequestedFor(urlPathMatching(auditUrl))))
 
-  }
-  def verifyAuditEvent(times: Int = 1) =
-    verify(times, postRequestedFor(urlPathEqualTo(AUDIT_URL)))
+  def givenAuditConnector(): Unit =
+    stubFor(post(urlPathMatching(auditUrl)).willReturn(aResponse().withStatus(204)))
 
-  private def stubForPostWithResponse(status: Int): Unit =
-    stubFor(
-      post(urlEqualTo(AUDIT_URL))
-        .willReturn(
-          aResponse()
-            .withStatus(status)
-        )
-    )
-
-  private def stubForImplicitAudits(status: Int): Unit =
-    stubFor(
-      post(urlEqualTo(AUDIT_MERGED_URL))
-        .willReturn(
-          aResponse()
-            .withStatus(status)
-        )
-    )
+  private def auditUrl = "/write/audit.*"
 
 }
