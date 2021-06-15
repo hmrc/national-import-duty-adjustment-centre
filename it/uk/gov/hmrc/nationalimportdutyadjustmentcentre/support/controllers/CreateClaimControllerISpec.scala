@@ -22,10 +22,10 @@ import play.api.Application
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.ServerBaseISpec
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuthStubs, CreateCaseStubs, FileTransferStubs, UpdateCaseStubs}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuditStubs, AuthStubs, CreateCaseStubs, FileTransferStubs, UpdateCaseStubs}
 
 class CreateClaimControllerISpec
-  extends ServerBaseISpec with AuthStubs with CreateCaseStubs with FileTransferStubs {
+  extends ServerBaseISpec with AuthStubs with CreateCaseStubs with FileTransferStubs with AuditStubs {
 
   this: Suite with ServerProvider =>
 
@@ -113,6 +113,7 @@ class CreateClaimControllerISpec
       givenAuthorisedAsValidTrader("GB123456789000")
       givenCreateCaseResponseWithSuccessMessage()
       givenFileTransferSucceeds("NID21134557697RM8WIB13", "my-form.pdf", correlationId)
+      givenFileTransferAuditted
 
       wsClient
         .url(s"$baseUrl/create-claim")
@@ -122,6 +123,7 @@ class CreateClaimControllerISpec
 
       verifyCaseCreated(1)
       verifyFileTransferHasHappened(1)
+      verifyAuditEvent(1)
     }
 
 
