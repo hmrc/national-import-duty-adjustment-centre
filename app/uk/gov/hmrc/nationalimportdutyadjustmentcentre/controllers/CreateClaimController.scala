@@ -45,15 +45,12 @@ class CreateClaimController @Inject() (
     extends BackendController(cc) with AuthActions with WithEORINumber with WithCorrelationId {
 
   def create(): Action[JsValue] = Action.async(parse.json) { implicit request =>
-    println(request.body)
     withAuthorised {
       withEORINumber { eoriNumber =>
-        println(eoriNumber)
         withCorrelationId { correlationId: String =>
           withJsonBody[CreateEISClaimRequest] { createClaimRequest: CreateEISClaimRequest =>
             createCaseService.submitClaim(eoriNumber, createClaimRequest.eisRequest, correlationId) flatMap {
               eisResponse =>
-                println(eisResponse)
                 val createClaimResponse: Future[CreateClaimResponse] = eisResponse match {
                   case success: EISCreateCaseSuccess =>
                     transferFilesToPega(success.CaseID, correlationId, createClaimRequest.uploadedFiles) map {
