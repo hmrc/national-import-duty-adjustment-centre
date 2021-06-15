@@ -24,7 +24,7 @@ import play.api.libs.ws.WSClient
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.ServerBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuthStubs, FileTransferStubs, UpdateCaseStubs}
 
-class UpdateCaseControllerISpec
+class UpdateClaimControllerISpec
   extends ServerBaseISpec with AuthStubs with UpdateCaseStubs with FileTransferStubs {
 
   this: Suite with ServerProvider =>
