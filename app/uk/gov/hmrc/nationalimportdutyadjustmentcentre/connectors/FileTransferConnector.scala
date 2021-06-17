@@ -53,7 +53,7 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
                 response.status,
                 Instant.now(),
                 None
-            )
+              )
           }
       ) recover {
       case exception: Exception =>
@@ -61,14 +61,13 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
     }
 
   private def failResponse(reference: String, errorCode: Int, errorMessage: String) =
-
     FileTransferResult(
-    reference,
-    success = false,
-    httpStatus = errorCode,
-    transferredAt = Instant.now(),
-    error = Some(errorMessage)
-  )
+      reference,
+      success = false,
+      httpStatus = errorCode,
+      transferredAt = Instant.now(),
+      error = Some(errorMessage)
+    )
 
   private def isSuccess(response: HttpResponse): Boolean =
     response.status >= 200 && response.status < 300
