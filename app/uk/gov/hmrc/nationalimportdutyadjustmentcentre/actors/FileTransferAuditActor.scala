@@ -42,7 +42,6 @@ class FileTransferAuditActor(
         executionContext,
         Json.writes[FileTransferAudit]
       )
-      context.stop(self)
   }
 
 }

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors
 
-import akka.actor.{Actor, ActorRef, Status}
+import akka.actor.{Actor, ActorRef, PoisonPill, Status}
 import akka.pattern.pipe
 import play.api.Logger
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
@@ -83,6 +83,7 @@ class FileTransferActor(
       if (results.size == batchSize) {
 
         auditor ! AuditFileTransferResults(results)
+        auditor ! PoisonPill
 
         context.stop(self)
       } else

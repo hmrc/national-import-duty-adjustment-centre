@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs
 
+import com.github.tomakehurst.wiremock.client.CountMatchingStrategy.EQUAL_TO
 import com.github.tomakehurst.wiremock.client.WireMock._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
@@ -30,6 +31,21 @@ trait AuditStubs extends Eventually {
 
   def verifyAuditEvent() =
     eventually(verify(postRequestedFor(urlPathMatching(auditUrl))))
+
+  def verifyAuditEvent(times: Int) =
+    eventually(verify(times, postRequestedFor(urlPathMatching(auditUrl))))
+
+  def verifyFilesTransferredAudit(times: Int) =
+    eventually(verify(times, postRequestedFor(urlPathMatching(auditUrl)).withRequestBody(matchingJsonPath("$.auditType", containing("FilesTransferred")))))
+
+  def verifyFileTransfersAuditedSuccessAndFailures(times: Int) =
+    eventually(verify(times, postRequestedFor(urlPathMatching(auditUrl))
+      .withRequestBody(matchingJsonPath("$.auditType", containing("FilesTransferred")))
+      .withRequestBody(matchingJsonPath("$.detail.fileTransferResults[*].success", containing("false")))
+      .withRequestBody(matchingJsonPath("$.detail.fileTransferResults[*].success", containing("true")))
+      .withRequestBody(matchingJsonPath("$.detail.fileTransferResults[*].httpStatus", containing("499")))
+      .withRequestBody(matchingJsonPath("$.detail.fileTransferResults[*].error", containing("Cannot determine success status")))
+    ))
 
   def givenAuditConnector(): Unit =
     stubFor(post(urlPathMatching(auditUrl)).willReturn(aResponse().withStatus(204)))

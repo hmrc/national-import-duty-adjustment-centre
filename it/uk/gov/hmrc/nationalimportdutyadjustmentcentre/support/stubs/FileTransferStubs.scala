@@ -17,6 +17,7 @@
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs
 
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.http.Fault
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
 trait FileTransferStubs {
@@ -59,6 +60,7 @@ trait FileTransferStubs {
         )
     )
 
+
   def givenFileTransferWithStatus(status: Int): Unit =
     stubFor(
       post(urlPathEqualTo(FILE_TRANSFER_URL))
@@ -67,6 +69,53 @@ trait FileTransferStubs {
             .withStatus(status)
         )
     )
+
+  def givenBrokenFileTransfer(): Unit =
+    stubFor(
+      post(urlPathEqualTo(FILE_TRANSFER_URL))
+        .willReturn(
+          aResponse()
+            .withFault(Fault.CONNECTION_RESET_BY_PEER)
+        )
+    )
+
+  def givenFileTransferGivesFourNineNine(
+                                          caseReferenceNumber: String,
+                                          conversationId: String
+                                        ): Unit = {
+    stubFor(
+      post(urlEqualTo(FILE_TRANSFER_URL))
+        .withRequestBody(
+          equalToJson(
+            s"""{
+               |   "caseReferenceNumber":"$caseReferenceNumber",
+               |   "fileName":"works.jpg",
+               |   "conversationId":"$conversationId"
+               |}""".stripMargin,
+            true,
+            true
+          )
+        )
+        .willReturn(aResponse()
+          .withStatus(202))
+    )
+
+    stubFor(
+      post(urlEqualTo(FILE_TRANSFER_URL))
+        .withRequestBody(
+          equalToJson(
+            s"""{
+               |   "caseReferenceNumber":"$caseReferenceNumber",
+               |   "fileName":"fails.jpg",
+               |   "conversationId":"$conversationId"
+               |}""".stripMargin,
+            true,
+            true
+          )
+        )
+        .willReturn(aResponse().withStatus(499))
+    )
+  }
 
   def verifyFileTransferHasHappened(times: Int = 1) =
     verify(times, postRequestedFor(urlPathEqualTo(FILE_TRANSFER_URL)))
