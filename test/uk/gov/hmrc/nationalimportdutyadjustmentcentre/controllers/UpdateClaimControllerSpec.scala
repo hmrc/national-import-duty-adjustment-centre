@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
-import org.mockito.Mockito.{reset, verifyNoInteractions, when}
+import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
@@ -31,6 +32,7 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.{MicroserviceAuthConnector, UpdateCaseConnector}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models._
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.FileTransferService
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.utils.TestData
 
 import scala.concurrent.Future
@@ -38,11 +40,13 @@ import scala.concurrent.Future
 class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite with TestData {
 
   private val mockUpdateCaseConnector = mock[UpdateCaseConnector]
+  private val mockFileTransferService = mock[FileTransferService]
 
   override lazy val app: Application = GuiceApplicationBuilder()
     .overrides(
       bind[MicroserviceAuthConnector].to(mockAuthConnector),
-      bind[UpdateCaseConnector].to(mockUpdateCaseConnector)
+      bind[UpdateCaseConnector].to(mockUpdateCaseConnector),
+      bind[FileTransferService].to(mockFileTransferService)
     )
     .build()
 
@@ -65,6 +69,13 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       when(mockUpdateCaseConnector.updateClaim(any[JsValue], anyString())(any())).thenReturn(
         Future.successful(eisUpdateSuccessResponse)
       )
+      when(
+        mockFileTransferService.transferFiles(
+          ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(updateClaimRequest.uploadedFiles)
+        )(any(), any())
+      ).thenReturn(Future(Seq.empty))
       val result: Future[Result] =
         route(app, updatePost.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(updateClaimRequest))).get
 
@@ -77,6 +88,12 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           result = Some(UpdateClaimResult(eisUpdateSuccessResponse.CaseID, Seq.empty))
         )
       )
+
+      verify(mockFileTransferService).transferFiles(
+        ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+        ArgumentMatchers.eq("xyz"),
+        ArgumentMatchers.eq(updateClaimRequest.uploadedFiles)
+      )(any(), any())
     }
 
     "update-case request succeeds and file uploads succeed" in {
@@ -84,7 +101,16 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         Future.successful(eisUpdateSuccessResponse)
       )
 
-      val uploads             = uploadedFiles("upscanReference")
+      val uploads = uploadedFiles("upscanReference")
+
+      when(
+        mockFileTransferService.transferFiles(
+          ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(uploads)
+        )(any(), any())
+      ).thenReturn(Future(Seq.empty))
+
       val fileTransferResults = Seq.empty
 
       val request = updateClaimRequest.copy(uploadedFiles = uploads)
@@ -101,6 +127,13 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           result = Some(UpdateClaimResult(eisUpdateSuccessResponse.CaseID, fileTransferResults))
         )
       )
+
+      verify(mockFileTransferService)
+        .transferFiles(
+          ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(uploads)
+        )(any(), any())
     }
 
     "handle an unsuccessful request" when {
