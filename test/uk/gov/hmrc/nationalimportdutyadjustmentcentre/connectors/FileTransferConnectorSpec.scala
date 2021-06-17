@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpPost, HttpResponse, U
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.UnitSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.FileTransferResult
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.FileTransferRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,7 +39,7 @@ class FileTransferConnectorSpec extends UnitSpec with ScalaFutures with BeforeAn
   val mockHttpPost: HttpPost   = mock[HttpPost]
   val mockAppConfig: AppConfig = mock[AppConfig]
 
-  val request  = mock[FileTransferRequest]
+  val request  = mock[TraderServicesFileTransferRequest]
   val response = mock[HttpResponse]
 
   val connector = new FileTransferConnector(mockAppConfig, mockHttpPost)
@@ -57,7 +57,14 @@ class FileTransferConnectorSpec extends UnitSpec with ScalaFutures with BeforeAn
 
   "FileTransferConnector" should {
     def httpOnPost =
-      when(mockHttpPost.POST[FileTransferRequest, HttpResponse](any(), any(), any())(any(), any(), any(), any()))
+      when(
+        mockHttpPost.POST[TraderServicesFileTransferRequest, HttpResponse](any(), any(), any())(
+          any(),
+          any(),
+          any(),
+          any()
+        )
+      )
 
     "return a successful FileTransferResult" in {
       httpOnPost.thenReturn(Future.successful(HttpResponse(200, "Body")))

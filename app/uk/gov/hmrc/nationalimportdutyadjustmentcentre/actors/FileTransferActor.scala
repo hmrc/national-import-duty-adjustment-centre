@@ -22,7 +22,7 @@ import play.api.Logger
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors.FileTransferAuditActor.AuditFileTransferResults
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.FileTransferRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferResult, UploadedFile}
 
 import java.time.{LocalDateTime, ZoneOffset}
@@ -69,7 +69,7 @@ class FileTransferActor(
         error = Some(message)
       )
 
-    case akka.actor.Status.Failure(error) =>
+    case Status.Failure(error) =>
       Logger(getClass).error(error.toString())
       results = results :+ FileTransferResult(
         upscanReference = "<unknown>",
@@ -95,7 +95,7 @@ class FileTransferActor(
     hc: HeaderCarrier
   ): Future[FileTransferResult] =
     fileTransferConnector.transferFile(
-      FileTransferRequest
+      TraderServicesFileTransferRequest
         .fromUploadedFile(
           caseReferenceNumber,
           conversationId,

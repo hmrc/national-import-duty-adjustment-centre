@@ -21,7 +21,7 @@ import java.util.UUID
 import play.api.Application
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.FileTransferRequest
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.AppBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.FileTransferStubs
 
@@ -71,7 +71,7 @@ trait FileTransferConnectorISpecSetup extends AppBaseISpec with FileTransferStub
   lazy val connector: FileTransferConnector =
     app.injector.instanceOf[FileTransferConnector]
 
-  def testRequest(upscanReference: String): FileTransferRequest = FileTransferRequest(
+  def testRequest(upscanReference: String): TraderServicesFileTransferRequest = TraderServicesFileTransferRequest(
     conversationId = "",
     caseReferenceNumber = "NID21134557697RM8WIB13",
     applicationName = "",

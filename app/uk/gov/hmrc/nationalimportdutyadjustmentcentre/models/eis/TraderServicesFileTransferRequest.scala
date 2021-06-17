@@ -19,7 +19,7 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.UploadedFile
 
-case class FileTransferRequest(
+case class TraderServicesFileTransferRequest(
   conversationId: String,
   caseReferenceNumber: String,
   applicationName: String,
@@ -32,7 +32,7 @@ case class FileTransferRequest(
   batchCount: Int
 )
 
-object FileTransferRequest {
+object TraderServicesFileTransferRequest {
 
   def fromUploadedFile(
     caseReferenceNumber: String,
@@ -41,8 +41,8 @@ object FileTransferRequest {
     batchSize: Int,
     batchCount: Int,
     uploadedFile: UploadedFile
-  ): FileTransferRequest =
-    FileTransferRequest(
+  ): TraderServicesFileTransferRequest =
+    TraderServicesFileTransferRequest(
       conversationId = conversationId,
       caseReferenceNumber = caseReferenceNumber,
       applicationName = applicationName,
@@ -55,7 +55,7 @@ object FileTransferRequest {
       batchCount = batchCount
     )
 
-  implicit val formats: Format[FileTransferRequest] =
-    Json.format[FileTransferRequest]
+  implicit val formats: Format[TraderServicesFileTransferRequest] =
+    Json.format[TraderServicesFileTransferRequest]
 
 }

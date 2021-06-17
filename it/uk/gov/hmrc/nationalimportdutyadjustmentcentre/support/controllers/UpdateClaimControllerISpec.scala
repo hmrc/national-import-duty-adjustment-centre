@@ -16,14 +16,13 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.controllers
 
-import com.github.tomakehurst.wiremock.client.WireMock
 import org.scalatest.Suite
 import org.scalatestplus.play.ServerProvider
 import play.api.Application
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.ServerBaseISpec
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuditStubs, AuthStubs, FileTransferStubs, UpdateCaseStubs}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuthStubs, FileTransferStubs, UpdateCaseStubs}
 
 class UpdateClaimControllerISpec
   extends ServerBaseISpec with AuthStubs with UpdateCaseStubs with FileTransferStubs {
