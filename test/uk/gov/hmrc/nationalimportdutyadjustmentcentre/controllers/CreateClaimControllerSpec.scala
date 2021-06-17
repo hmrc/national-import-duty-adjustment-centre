@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import java.time.Instant
-
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
-import org.mockito.Mockito.{reset, verifyNoInteractions, when}
+import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
@@ -35,11 +34,7 @@ import uk.gov.hmrc.nationalimportdutyadjustmentcentre.base.ControllerSpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.config.AppConfig
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.MicroserviceAuthConnector
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.ApiError
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{
-  CreateClaimResponse,
-  CreateClaimResult,
-  FileTransferResult
-}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{CreateClaimResponse, CreateClaimResult}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.services.{CreateCaseService, FileTransferService}
 
 import scala.concurrent.Future
@@ -81,7 +76,15 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         when(mockCreateCaseService.submitClaim(anyString(), any[JsValue], anyString())(any())).thenReturn(
           Future.successful(eisCreateSuccessResponse)
         )
-        when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(Future.successful(Seq.empty))
+
+        when(
+          mockFileTransferService.transferFiles(
+            ArgumentMatchers.eq(eisCreateSuccessResponse.CaseID),
+            ArgumentMatchers.eq("xyz"),
+            ArgumentMatchers.eq(createClaimRequest.uploadedFiles)
+          )(any(), any())
+        ).thenReturn(Future(Seq.empty))
+
         val result: Future[Result] =
           route(app, post.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(createClaimRequest))).get
 
@@ -94,6 +97,13 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
             result = Some(CreateClaimResult(eisCreateSuccessResponse.CaseID, Seq.empty))
           )
         )
+
+        verify(mockFileTransferService).transferFiles(
+          ArgumentMatchers.eq(eisCreateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(createClaimRequest.uploadedFiles)
+        )(any(), any())
+
       }
 
       "create-case request succeeds and file uploads succeed" in {
@@ -102,18 +112,16 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
         )
 
         val uploads = uploadedFiles("upscanReference")
-        val fileTransferResults = Seq(
-          FileTransferResult(
-            upscanReference = "upscanReference",
-            success = true,
-            httpStatus = 202,
-            transferredAt = Instant.now
-          )
-        )
 
-        when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(
-          Future.successful(fileTransferResults)
-        )
+        when(
+          mockFileTransferService.transferFiles(
+            ArgumentMatchers.eq(eisCreateSuccessResponse.CaseID),
+            ArgumentMatchers.eq("xyz"),
+            ArgumentMatchers.eq(uploads)
+          )(any(), any())
+        ).thenReturn(Future(Seq.empty))
+
+        val fileTransferResults = Seq.empty
 
         val request = createClaimRequest.copy(uploadedFiles = uploads)
 
@@ -129,6 +137,13 @@ class CreateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
             result = Some(CreateClaimResult(eisCreateSuccessResponse.CaseID, fileTransferResults))
           )
         )
+
+        verify(mockFileTransferService).transferFiles(
+          ArgumentMatchers.eq(eisCreateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(uploads)
+        )(any(), any())
+
       }
 
     }

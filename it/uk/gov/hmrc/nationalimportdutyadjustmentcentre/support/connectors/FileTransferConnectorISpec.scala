@@ -31,7 +31,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
     "transferFile" should {
       "return success if successful" in {
 
-        givenTraderServicesFileTransferWithStatus(202)
+        givenFileTransfer()
 
         val request = testRequest(UUID.randomUUID().toString)
         val result  = await(connector.transferFile(request))
@@ -40,12 +40,12 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
         result.success mustBe true
         result.httpStatus mustBe 202
 
-        verifyTraderServicesFileTransferHasHappened(times = 1)
+        verifyFileTransferHasHappened(times = 1)
       }
 
       "return failure for non-2xx response" in {
 
-        givenTraderServicesFileTransferWithStatus(403)
+        givenFileTransferWithStatus(403)
 
         val request = testRequest(UUID.randomUUID().toString)
         val result  = await(connector.transferFile(request))
@@ -55,7 +55,7 @@ class FileTransferConnectorISpec extends FileTransferConnectorISpecSetup {
         result.httpStatus mustBe 403
         result.error mustBe None
 
-        verifyTraderServicesFileTransferHasHappened(times = 1)
+        verifyFileTransferHasHappened(times = 1)
       }
 
     }

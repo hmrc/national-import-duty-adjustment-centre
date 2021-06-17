@@ -16,23 +16,12 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.models
 
-import play.api.libs.json.{Json, OFormat, Reads, Writes}
+import play.api.libs.json.{Json, Writes}
 
-import java.time.Instant
+case class FileTransferAudit(caseReferenceNumber: String, fileTransferResults: Seq[FileTransferResult])
 
-case class FileTransferResult(
-  upscanReference: String,
-  success: Boolean,
-  httpStatus: Int,
-  transferredAt: Instant,
-  error: Option[String] = None
-)
+object FileTransferAudit {
 
-object FileTransferResult {
-
-  implicit val resultWrites: Writes[FileTransferResult] = Json.writes[FileTransferResult]
-  implicit val resultReads: Reads[FileTransferResult]   = Json.reads[FileTransferResult]
-
-  implicit val formats: OFormat[FileTransferResult] = Json.format[FileTransferResult]
+  implicit val resultWrites: Writes[FileTransferAudit] = Json.writes[FileTransferAudit]
 
 }

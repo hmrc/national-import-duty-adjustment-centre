@@ -16,34 +16,39 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.services
 
-import javax.inject.Inject
+import akka.actor.{ActorRef, ActorSystem, Props}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.actors.{FileTransferActor, FileTransferAuditActor}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.FileTransferConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.TraderServicesFileTransferRequest
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.{FileTransferResult, UploadedFile}
+import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-class FileTransferService @Inject() (fileTransferConnector: FileTransferConnector)(implicit ec: ExecutionContext) {
+class FileTransferService @Inject() (
+  fileTransferConnector: FileTransferConnector,
+  auditConnector: AuditConnector,
+  actorSystem: ActorSystem
+) {
 
   def transferFiles(caseReferenceNumber: String, conversationId: String, uploadedFiles: Seq[UploadedFile])(implicit
-    hc: HeaderCarrier
-  ): Future[Seq[FileTransferResult]] =
-    Future.sequence(
-      uploadedFiles.zipWithIndex
-        .map {
-          case (file, index) =>
-            TraderServicesFileTransferRequest
-              .fromUploadedFile(
-                caseReferenceNumber,
-                conversationId,
-                applicationName = "NIDAC",
-                batchSize = uploadedFiles.size,
-                batchCount = index + 1,
-                uploadedFile = file
-              )
-        }
-        .map(fileTransferConnector.transferFile(_))
+    hc: HeaderCarrier,
+    executionContext: ExecutionContext
+  ): Future[Seq[FileTransferResult]] = {
+
+    val auditActor: ActorRef = actorSystem.actorOf(
+      Props(classOf[FileTransferAuditActor], caseReferenceNumber, auditConnector, conversationId, hc, executionContext)
     )
+
+    // Single-use actor responsible for transferring files batch to PEGA
+    val fileTransferActor: ActorRef =
+      actorSystem.actorOf(
+        Props(classOf[FileTransferActor], caseReferenceNumber, fileTransferConnector, conversationId, auditActor)
+      )
+
+    fileTransferActor ! FileTransferActor.TransferMultipleFiles(uploadedFiles.zipWithIndex, uploadedFiles.size, hc)
+    Future.successful(Seq.empty)
+  }
 
 }

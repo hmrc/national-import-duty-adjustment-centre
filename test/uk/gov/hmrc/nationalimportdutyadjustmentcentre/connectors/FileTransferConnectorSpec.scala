@@ -56,14 +56,15 @@ class FileTransferConnectorSpec extends UnitSpec with ScalaFutures with BeforeAn
   }
 
   "FileTransferConnector" should {
-    def httpOnPost = when(
-      mockHttpPost.POST[TraderServicesFileTransferRequest, HttpResponse](any(), any(), any())(
-        any(),
-        any(),
-        any(),
-        any()
+    def httpOnPost =
+      when(
+        mockHttpPost.POST[TraderServicesFileTransferRequest, HttpResponse](any(), any(), any())(
+          any(),
+          any(),
+          any(),
+          any()
+        )
       )
-    )
 
     "return a successful FileTransferResult" in {
       httpOnPost.thenReturn(Future.successful(HttpResponse(200, "Body")))

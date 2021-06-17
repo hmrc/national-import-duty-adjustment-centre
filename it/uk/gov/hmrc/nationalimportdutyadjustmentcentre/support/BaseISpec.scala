@@ -18,13 +18,16 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support
 
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.wordspec.AnyWordSpec
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.AuditStubs
 
 import scala.concurrent.duration.{Duration, DurationInt, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
-class BaseISpec extends AnyWordSpec with Matchers with WireMockSupport {
+class BaseISpec extends AnyWordSpec with Matchers with AuditStubs with WireMockSupport {
 
-  override def commonStubs(): Unit = {}
+  override def commonStubs(): Unit = {
+    givenAuditConnector()
+  }
 
   implicit val defaultTimeout: FiniteDuration                    = 5 seconds
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)

@@ -111,4 +111,7 @@ trait CreateCaseStubs {
         )
     )
 
+  def verifyCaseCreated(times: Int = 1) =
+    verify(times, postRequestedFor(urlPathEqualTo(CREATE_CASE_URL)))
+
 }

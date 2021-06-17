@@ -24,13 +24,19 @@ trait TestApplication {
   def defaultAppBuilder =
     new GuiceApplicationBuilder()
       .configure(
+        "microservice.services.auth.port"                    -> wireMockPort,
         "microservice.services.eis.host"                           -> wireMockHost,
         "microservice.services.eis.port"                           -> wireMockPort,
         "microservice.services.trader-services.file-transfer.port" -> wireMockPort,
         "microservice.services.eis.createcaseapi.token"            -> "dummy-it-token",
         "microservice.services.eis.updatecaseapi.token"            -> "dummy-it-token",
         "metrics.enabled"                                          -> false,
-        "auditing.enabled"                                         -> false
+        "auditing.enabled"                                         -> true,
+        "auditing.consumer.baseUri.host"                               -> wireMockHost,
+        "auditing.consumer.baseUri.port"                               -> wireMockPort,
+        "microservice.services.trader-services.file-transfer.host"     -> wireMockHost,
+        "microservice.services.trader-services.file-transfer.port"     -> wireMockPort,
+        "microservice.services.trader-services.file-transfer.path"     -> "/file-transmission-synchronous-stub/transfer-file"
       )
 
 }

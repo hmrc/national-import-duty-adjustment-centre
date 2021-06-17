@@ -38,25 +38,38 @@ class FileTransferConnector @Inject() (val config: AppConfig, val http: HttpPost
       .POST[TraderServicesFileTransferRequest, HttpResponse](url, fileTransferRequest)
       .map(
         response =>
-          FileTransferResult(
-            fileTransferRequest.upscanReference,
-            isSuccess(response),
-            response.status,
-            Instant.now(),
-            None
-          )
+          response match {
+
+            case fileTransferResponse if fileTransferResponse.status == 499 =>
+              FileTransferResult(
+                fileTransferRequest.upscanReference,
+                isSuccess(response),
+                response.status,
+                Instant.now(),
+                Some("Cannot determine success status")
+              )
+            case _ =>
+              FileTransferResult(
+                fileTransferRequest.upscanReference,
+                isSuccess(response),
+                response.status,
+                Instant.now(),
+                None
+              )
+          }
       ) recover {
       case exception: Exception =>
         failResponse(fileTransferRequest.upscanReference, 500, exception.getMessage)
     }
 
-  private def failResponse(reference: String, errorCode: Int, errorMessage: String) = FileTransferResult(
-    reference,
-    success = false,
-    httpStatus = errorCode,
-    transferredAt = Instant.now(),
-    error = Some(errorMessage)
-  )
+  private def failResponse(reference: String, errorCode: Int, errorMessage: String) =
+    FileTransferResult(
+      reference,
+      success = false,
+      httpStatus = errorCode,
+      transferredAt = Instant.now(),
+      error = Some(errorMessage)
+    )
 
   private def isSuccess(response: HttpResponse): Boolean =
     response.status >= 200 && response.status < 300

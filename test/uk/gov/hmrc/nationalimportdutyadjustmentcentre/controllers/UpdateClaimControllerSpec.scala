@@ -16,10 +16,9 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.controllers
 
-import java.time.Instant
-
+import org.mockito.ArgumentMatchers
 import org.mockito.ArgumentMatchers.{any, anyString}
-import org.mockito.Mockito.{reset, verifyNoInteractions, when}
+import org.mockito.Mockito.{reset, verify, verifyNoInteractions, when}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.Application
 import play.api.inject.bind
@@ -70,7 +69,13 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       when(mockUpdateCaseConnector.updateClaim(any[JsValue], anyString())(any())).thenReturn(
         Future.successful(eisUpdateSuccessResponse)
       )
-      when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(Future.successful(Seq.empty))
+      when(
+        mockFileTransferService.transferFiles(
+          ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(updateClaimRequest.uploadedFiles)
+        )(any(), any())
+      ).thenReturn(Future(Seq.empty))
       val result: Future[Result] =
         route(app, updatePost.withHeaders(("x-correlation-id", "xyz")).withJsonBody(toJson(updateClaimRequest))).get
 
@@ -83,6 +88,12 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           result = Some(UpdateClaimResult(eisUpdateSuccessResponse.CaseID, Seq.empty))
         )
       )
+
+      verify(mockFileTransferService).transferFiles(
+        ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+        ArgumentMatchers.eq("xyz"),
+        ArgumentMatchers.eq(updateClaimRequest.uploadedFiles)
+      )(any(), any())
     }
 
     "update-case request succeeds and file uploads succeed" in {
@@ -91,18 +102,16 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
       )
 
       val uploads = uploadedFiles("upscanReference")
-      val fileTransferResults = Seq(
-        FileTransferResult(
-          upscanReference = "upscanReference",
-          success = true,
-          httpStatus = 202,
-          transferredAt = Instant.now
-        )
-      )
 
-      when(mockFileTransferService.transferFiles(any(), any(), any())(any())).thenReturn(
-        Future.successful(fileTransferResults)
-      )
+      when(
+        mockFileTransferService.transferFiles(
+          ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(uploads)
+        )(any(), any())
+      ).thenReturn(Future(Seq.empty))
+
+      val fileTransferResults = Seq.empty
 
       val request = updateClaimRequest.copy(uploadedFiles = uploads)
 
@@ -118,6 +127,13 @@ class UpdateClaimControllerSpec extends ControllerSpec with GuiceOneAppPerSuite 
           result = Some(UpdateClaimResult(eisUpdateSuccessResponse.CaseID, fileTransferResults))
         )
       )
+
+      verify(mockFileTransferService)
+        .transferFiles(
+          ArgumentMatchers.eq(eisUpdateSuccessResponse.CaseID),
+          ArgumentMatchers.eq("xyz"),
+          ArgumentMatchers.eq(uploads)
+        )(any(), any())
     }
 
     "handle an unsuccessful request" when {
