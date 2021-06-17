@@ -39,13 +39,13 @@ class FileTransferActor(
   import FileTransferActor._
   import context.dispatcher
 
-  var clientRef: ActorRef              = ActorRef.noSender
   var results: Seq[FileTransferResult] = Seq.empty
+  var startTimestamp: Long             = 0
 
   override def receive: Receive = {
 
     case TransferMultipleFiles(files, batchSize, headerCarrier) =>
-      clientRef = sender()
+      startTimestamp = System.currentTimeMillis()
       files.map {
         case (file, index) => TransferSingleFile(file, index, batchSize, headerCarrier)
       }
@@ -80,12 +80,17 @@ class FileTransferActor(
       )
 
     case CheckComplete(batchSize) =>
-      if (results.size == batchSize) {
+      if (results.size == batchSize || System.currentTimeMillis() - startTimestamp > 3600000 /*hour*/ ) {
 
         auditor ! AuditFileTransferResults(results)
         auditor ! PoisonPill
 
         context.stop(self)
+
+        Logger(getClass).info(s"Transferred ${results.size} out of $batchSize files in ${(System
+          .currentTimeMillis() - startTimestamp) / 1000} seconds. It was ${results
+          .count(_.success)} successes and ${results.count(f => !f.success)} failures.")
+
       } else
         context.system.scheduler
           .scheduleOnce(FiniteDuration(500, "ms"), self, CheckComplete(batchSize))

@@ -173,7 +173,7 @@ class UpdateClaimControllerISpec
 
   " partially succesful POST /update-claim" should {
 
-    "return file transfer runs out of steam" in {
+    "audit succesfully if file transfers receive 499 response" in {
 
       val simulateErros =
         """
