@@ -46,7 +46,11 @@ class CreateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, 
       http.POST[JsValue, EISCreateCaseResponse](
         url,
         request,
-        eisApiHeaders(correlationId, config.eisEnvironment, config.eisCreateCaseAuthorizationToken)
+        eisApiHeaders(
+          correlationId,
+          config.eisEnvironment,
+          config.eisCreateCaseAuthorizationToken
+        ) ++ mdtpTracingHeaders(hc)
       )(
         implicitly[Writes[JsValue]],
         readFromJsonSuccessOrFailure,

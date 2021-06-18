@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors
 
+import uk.gov.hmrc.http.{HeaderCarrier, HeaderNames}
+
 import java.time.format.DateTimeFormatter
 import java.time.{ZoneId, ZonedDateTime}
 import java.{util => ju}
@@ -26,6 +28,12 @@ trait EISConnector {
   private final val httpDateFormat = DateTimeFormatter
     .ofPattern("EEE, dd MMM yyyy HH:mm:ss z", ju.Locale.ENGLISH)
     .withZone(ZoneId.of("GMT"))
+
+  final def mdtpTracingHeaders(hc: HeaderCarrier): Seq[(String, String)] =
+    Seq(
+      hc.requestId.map(HeaderNames.xRequestId -> _.value),
+      hc.sessionId.map(HeaderNames.xSessionId -> _.value)
+    ).flatten
 
   /** Headers required by the EIS API */
   final def eisApiHeaders(correlationId: String, environment: String, token: String): Seq[(String, String)] =
