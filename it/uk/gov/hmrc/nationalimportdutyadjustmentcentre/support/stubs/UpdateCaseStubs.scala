@@ -19,12 +19,16 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.Scenario
 import play.mvc.Http.MimeTypes
+import uk.gov.hmrc.http.{RequestId, SessionId}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
 trait UpdateCaseStubs {
   me: WireMockSupport =>
 
   val UPDATE_CASE_URL = "/eis-stub/update-case"
+
+  val requestId: RequestId = RequestId(java.util.UUID.randomUUID().toString)
+  val sessionId: SessionId = SessionId(java.util.UUID.randomUUID().toString)
 
   val caseId = "NID21134557697RM8WIB13"
 
@@ -102,12 +106,14 @@ trait UpdateCaseStubs {
   def givenUpdateCaseResponseWithStatusContentTypeAndBody(status: Int = 200, contentType: String, body: String = successResponseJson): Unit =
     stubForPostWithResponse(status, body, contentType)
 
-  def verifyCaseUpdated(times: Int = 1) =
+  def verifyCaseUpdated(times: Int = 1): Unit =
     verify(times, postRequestedFor(urlPathEqualTo(UPDATE_CASE_URL)))
 
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
     stubFor(
       post(urlEqualTo(UPDATE_CASE_URL))
+        .withHeader("x-request-id", matching(requestId.value))
+        .withHeader("x-session-id", matching(sessionId.value))
         .willReturn(
           aResponse()
             .withStatus(status)

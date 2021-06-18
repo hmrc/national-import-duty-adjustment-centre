@@ -19,6 +19,7 @@ package uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.Scenario
 import play.mvc.Http.MimeTypes
+import uk.gov.hmrc.http.{RequestId, SessionId}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.WireMockSupport
 
 trait CreateCaseStubs {
@@ -26,6 +27,8 @@ trait CreateCaseStubs {
 
   val CREATE_CASE_URL = "/eis-stub/create-case"
 
+  val requestId: RequestId = RequestId(java.util.UUID.randomUUID().toString)
+  val sessionId: SessionId = SessionId(java.util.UUID.randomUUID().toString)
   val caseId = "NID21134557697RM8WIB13"
 
   private val successResponseJson =
@@ -103,6 +106,8 @@ trait CreateCaseStubs {
   private def stubForPostWithResponse(status: Int, responseBody: String, contentType: String = MimeTypes.JSON): Unit =
     stubFor(
       post(urlEqualTo(CREATE_CASE_URL))
+        .withHeader("x-request-id", matching(requestId.value))
+        .withHeader("x-session-id", matching(sessionId.value))
         .willReturn(
           aResponse()
             .withStatus(status)
@@ -111,7 +116,7 @@ trait CreateCaseStubs {
         )
     )
 
-  def verifyCaseCreated(times: Int = 1) =
+  def verifyCaseCreated(times: Int = 1): Unit =
     verify(times, postRequestedFor(urlPathEqualTo(CREATE_CASE_URL)))
 
 }

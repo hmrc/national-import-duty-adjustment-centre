@@ -33,7 +33,7 @@ class UpdateClaimControllerISpec
 
   val baseUrl = s"http://localhost:$port"
 
-  val wsClient = app.injector.instanceOf[WSClient]
+  val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
   private val body =
     """
@@ -74,7 +74,7 @@ class UpdateClaimControllerISpec
 
     "return successful response with case reference number" in {
 
-      val correlationId = java.util.UUID.randomUUID().toString()
+      val correlationId = java.util.UUID.randomUUID().toString
 
 
       givenAuthorisedAsValidTrader("my-eori")
@@ -84,35 +84,55 @@ class UpdateClaimControllerISpec
 
       val responseOne = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseOne.status mustBe 200
 
       val responseTwo = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseTwo.status mustBe 200
 
       val responseThree = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseThree.status mustBe 200
 
       val responseFour = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseFour.status mustBe 200
 
       val responseFive = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseFive.status mustBe 200
@@ -124,7 +144,7 @@ class UpdateClaimControllerISpec
 
     "return successful response when File Transfer is broken" in {
 
-      val correlationId = java.util.UUID.randomUUID().toString()
+      val correlationId = java.util.UUID.randomUUID().toString
 
 
       givenAuthorisedAsValidTrader("my-eori")
@@ -133,35 +153,55 @@ class UpdateClaimControllerISpec
 
       val responseOne = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseOne.status mustBe 200
 
       val responseTwo = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseTwo.status mustBe 200
 
       val responseThree = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseThree.status mustBe 200
 
       val responseFour = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseFour.status mustBe 200
 
       val responseFive = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
       responseFive.status mustBe 200
@@ -249,7 +289,7 @@ class UpdateClaimControllerISpec
         """
       val errorRequest: JsValue = Json.parse(simulateErros)
 
-      val correlationId = java.util.UUID.randomUUID().toString()
+      val correlationId = java.util.UUID.randomUUID().toString
 
       givenAuthorisedAsValidTrader("my-eori")
       givenUpdateCaseResponseWithSuccessMessage()
@@ -257,12 +297,16 @@ class UpdateClaimControllerISpec
 
       val response = wsClient
         .url(s"$baseUrl/update-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(errorRequest).futureValue
 
       response.status mustBe 200
 
-      verifyCaseUpdated(1)
+      verifyCaseUpdated()
       verifyFileTransferHasHappened(7)
       verifyFileTransfersAuditedSuccessAndFailures(1)
     }
