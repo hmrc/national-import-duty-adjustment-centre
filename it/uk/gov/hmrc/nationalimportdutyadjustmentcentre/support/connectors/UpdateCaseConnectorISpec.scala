@@ -153,14 +153,17 @@ class UpdateCaseConnectorISpec extends UpdateCaseConnectorISpecSetup {
 
 trait UpdateCaseConnectorISpecSetup extends AppBaseISpec with UpdateCaseStubs {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier(
+    requestId = Some(requestId),
+    sessionId = Some(sessionId),
+  )
 
   override def fakeApplication: Application = defaultAppBuilder.build()
 
   lazy val connector: UpdateCaseConnector =
     app.injector.instanceOf[UpdateCaseConnector]
 
-  val correlationId = java.util.UUID.randomUUID().toString()
+  val correlationId: String = java.util.UUID.randomUUID().toString
 
   val testRequest: JsValue = Json.parse("""
   {

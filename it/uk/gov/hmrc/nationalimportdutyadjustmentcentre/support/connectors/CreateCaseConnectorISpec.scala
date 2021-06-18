@@ -21,7 +21,7 @@ import play.api.libs.json.{JsValue, Json}
 import play.mvc.Http.MimeTypes
 import uk.gov.hmrc.http.{HeaderCarrier, JsValidationException, UpstreamErrorResponse}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.connectors.CreateCaseConnector
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseSuccess, EISErrorDetail, EISUpdateCaseSuccess}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.models.eis.{EISCreateCaseError, EISCreateCaseSuccess, EISErrorDetail}
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.AppBaseISpec
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.CreateCaseStubs
 
@@ -140,15 +140,17 @@ class CreateCaseConnectorISpec extends CreateCaseConnectorISpecSetup {
 }
 
 trait CreateCaseConnectorISpecSetup extends AppBaseISpec with CreateCaseStubs {
-
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier(
+    requestId = Some(requestId),
+    sessionId = Some(sessionId),
+  )
 
   override def fakeApplication: Application = defaultAppBuilder.build()
 
   lazy val connector: CreateCaseConnector =
     app.injector.instanceOf[CreateCaseConnector]
 
-  val correlationId = java.util.UUID.randomUUID().toString()
+  val correlationId: String = java.util.UUID.randomUUID().toString
 
   val testRequest: JsValue = Json.parse("""
   {

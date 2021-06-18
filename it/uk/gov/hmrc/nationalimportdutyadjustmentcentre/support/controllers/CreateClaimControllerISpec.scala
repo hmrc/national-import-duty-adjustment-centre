@@ -22,7 +22,7 @@ import play.api.Application
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSClient
 import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.ServerBaseISpec
-import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuditStubs, AuthStubs, CreateCaseStubs, FileTransferStubs, UpdateCaseStubs}
+import uk.gov.hmrc.nationalimportdutyadjustmentcentre.support.stubs.{AuthStubs, CreateCaseStubs, FileTransferStubs}
 
 class CreateClaimControllerISpec
   extends ServerBaseISpec with AuthStubs with CreateCaseStubs with FileTransferStubs {
@@ -33,7 +33,7 @@ class CreateClaimControllerISpec
 
   val baseUrl = s"http://localhost:$port"
 
-  val wsClient = app.injector.instanceOf[WSClient]
+  val wsClient: WSClient = app.injector.instanceOf[WSClient]
 
   private val createBody =
   """
@@ -108,7 +108,7 @@ class CreateClaimControllerISpec
 
     "return successful response with case reference number" in {
 
-      val correlationId = java.util.UUID.randomUUID().toString()
+      val correlationId = java.util.UUID.randomUUID().toString
 
       givenAuthorisedAsValidTrader("GB123456789000")
       givenCreateCaseResponseWithSuccessMessage()
@@ -116,12 +116,16 @@ class CreateClaimControllerISpec
 
       wsClient
         .url(s"$baseUrl/create-claim")
-        .withHttpHeaders("X-Correlation-ID" -> correlationId)
+        .withHttpHeaders(
+          "X-Correlation-ID" -> correlationId,
+          "X-Request-ID" -> requestId.value,
+          "X-Session-ID" -> sessionId.value,
+        )
         .post(testRequest).futureValue
 
 
-      verifyCaseCreated(1)
-      verifyFileTransferHasHappened(1)
+      verifyCaseCreated()
+      verifyFileTransferHasHappened()
       verifyAuditEvent()
     }
 

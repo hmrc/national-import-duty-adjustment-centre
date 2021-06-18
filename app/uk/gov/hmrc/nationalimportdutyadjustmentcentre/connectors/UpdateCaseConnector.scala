@@ -46,7 +46,11 @@ class UpdateCaseConnector @Inject() (val config: AppConfig, val http: HttpPost, 
       http.POST[JsValue, EISUpdateCaseResponse](
         url,
         request,
-        eisApiHeaders(correlationId, config.eisEnvironment, config.eisUpdateCaseAuthorizationToken)
+        eisApiHeaders(
+          correlationId,
+          config.eisEnvironment,
+          config.eisUpdateCaseAuthorizationToken
+        ) ++ mdtpTracingHeaders(hc)
       )(
         implicitly[Writes[JsValue]],
         readFromJsonSuccessOrFailure,
